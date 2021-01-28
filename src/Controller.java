@@ -1,5 +1,9 @@
+import util.Point3f;
+
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -29,117 +33,57 @@ SOFTWARE.
  */ 
 
 //Singeton pattern
-public class Controller implements KeyListener {
-        
-	   private static boolean KeyAPressed= false;
-	   private static boolean KeySPressed= false;
-	   private static boolean KeyDPressed= false;
-	   private static boolean KeyWPressed= false;
-	   private static boolean KeySpacePressed= false;
+public class Controller implements MouseListener {
+
+	private static boolean MouseClicked = false;
+	private static final Controller instance = new Controller();
+	private static Point3f mouseClickPosition = new Point3f();
 	   
-	   private static final Controller instance = new Controller();
-	   
-	 public Controller() { 
+	public Controller() {
 	}
 	 
-	 public static Controller getInstance(){
+	public static Controller getInstance(){
 	        return instance;
 	    }
-	   
-	@Override
-	// Key pressed , will keep triggering 
-	public void keyTyped(KeyEvent e) { 
-		 
+
+	public void mouseClicked(MouseEvent e) {
+		mouseClickPosition.setX(e.getX());
+		mouseClickPosition.setY(e.getY());
+		setMouseClicked(true);
 	}
 
 	@Override
-	public void keyPressed(KeyEvent e) 
-	{ 
-		switch (e.getKeyChar()) 
-		{
-			case 'a':setKeyAPressed(true);break;  
-			case 's':setKeySPressed(true);break;
-			case 'w':setKeyWPressed(true);break;
-			case 'd':setKeyDPressed(true);break;
-			case ' ':setKeySpacePressed(true);break;   
-		    default:
-		    	//System.out.println("Controller test:  Unknown key pressed");
-		        break;
-		}  
-		
-	 // You can implement to keep moving while pressing the key here . 
-		
+	public void mousePressed(MouseEvent e) {
 	}
 
 	@Override
-	public void keyReleased(KeyEvent e) 
-	{ 
-		switch (e.getKeyChar()) 
-		{
-			case 'a':setKeyAPressed(false);break;  
-			case 's':setKeySPressed(false);break;
-			case 'w':setKeyWPressed(false);break;
-			case 'd':setKeyDPressed(false);break;
-			case ' ':setKeySpacePressed(false);break;   
-		    default:
-		    	//System.out.println("Controller test:  Unknown key pressed");
-		        break;
-		}  
-		 //upper case 
-	
+	public void mouseReleased(MouseEvent e) {
+		setMouseClicked(false);
 	}
 
-
-	public boolean isKeyAPressed() {
-		return KeyAPressed;
+	@Override
+	public void mouseEntered(MouseEvent e) {
 	}
 
-
-	public void setKeyAPressed(boolean keyAPressed) {
-		KeyAPressed = keyAPressed;
+	@Override
+	public void mouseExited(MouseEvent e) {
 	}
 
-
-	public boolean isKeySPressed() {
-		return KeySPressed;
+	public static boolean isMouseClicked() {
+		return MouseClicked;
 	}
 
-
-	public void setKeySPressed(boolean keySPressed) {
-		KeySPressed = keySPressed;
+	public void setMouseClicked(boolean mouseClicked) {
+		MouseClicked = mouseClicked;
 	}
 
-
-	public boolean isKeyDPressed() {
-		return KeyDPressed;
+	public Point3f getMouseClickPosition() {
+		return mouseClickPosition;
 	}
 
-
-	public void setKeyDPressed(boolean keyDPressed) {
-		KeyDPressed = keyDPressed;
+	public void setMouseClickPosition(Point3f mouseClickPosition) {
+		this.mouseClickPosition = mouseClickPosition;
 	}
-
-
-	public boolean isKeyWPressed() {
-		return KeyWPressed;
-	}
-
-
-	public void setKeyWPressed(boolean keyWPressed) {
-		KeyWPressed = keyWPressed;
-	}
-
-
-	public boolean isKeySpacePressed() {
-		return KeySpacePressed;
-	}
-
-
-	public void setKeySpacePressed(boolean keySpacePressed) {
-		KeySpacePressed = keySpacePressed;
-	} 
-	
-	 
 }
 
 /*

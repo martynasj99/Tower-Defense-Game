@@ -69,45 +69,27 @@ public class Viewer extends JPanel {
 	}
 
 	public void updateview() {
-		
 		this.repaint();
 		// TODO Auto-generated method stub
-		
 	}
 	
 	
 	public void paintComponent(Graphics g) {
-		
 		super.paintComponent(g);
 		CurrentAnimationTime++; // runs animation time step 
-		
-		
+
 		//Draw player Game Object 
-		int x = (int) gameworld.getPlayer().getCentre().getX();
+/*		int x = (int) gameworld.getPlayer().getCentre().getX();
 		int y = (int) gameworld.getPlayer().getCentre().getY();
 		int width = (int) gameworld.getPlayer().getWidth();
 		int height = (int) gameworld.getPlayer().getHeight();
-		String texture = gameworld.getPlayer().getTexture();
-		
-		//Draw background 
-		drawBackground(g);
-		
-		//Draw player
-		drawPlayer(x, y, width, height, texture,g);
-		  
-		//Draw Bullets 
-		// change back 
-		gameworld.getBullets().forEach((temp) -> 
-		{ 
-			drawBullet((int) temp.getCentre().getX(), (int) temp.getCentre().getY(), (int) temp.getWidth(), (int) temp.getHeight(), temp.getTexture(),g);	 
-		}); 
-		
-		//Draw Enemies   
-		gameworld.getEnemies().forEach((temp) -> 
-		{
-			drawEnemies((int) temp.getCentre().getX(), (int) temp.getCentre().getY(), (int) temp.getWidth(), (int) temp.getHeight(), temp.getTexture(),g);	 
-		 
-	    }); 
+		String texture = gameworld.getPlayer().getTexture();*/
+
+		drawBackground(g); //Draw background
+		gameworld.getTowers().forEach((temp) -> drawPlayer((int) temp.getCentre().getX(), (int) temp.getCentre().getY(), (int) temp.getWidth(), (int) temp.getHeight(), temp.getTexture(), g));
+		gameworld.getBullets().forEach((temp) -> drawBullet((int) temp.getCentre().getX(), (int) temp.getCentre().getY(), (int) temp.getWidth(), (int) temp.getHeight(), temp.getTexture(), g)); //Draw bullets
+		gameworld.getEnemies().forEach((temp) -> drawEnemies((int) temp.getCentre().getX(), (int) temp.getCentre().getY(), (int) temp.getWidth(), (int) temp.getHeight(), temp.getTexture(),g)); //Draw Enemies
+
 	}
 	
 	private void drawEnemies(int x, int y, int width, int height, String texture, Graphics g) {
@@ -122,16 +104,14 @@ public class Viewer extends JPanel {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} 
-		
+		}
 	}
 
-	private void drawBackground(Graphics g)
-	{
-		File TextureToLoad = new File("res/spacebackground.png");  //should work okay on OSX and Linux but check if you have issues depending your eclipse install or if your running this without an IDE 
+	private void drawBackground(Graphics g){
+		File TextureToLoad = new File("res/map01.jpg");  //should work okay on OSX and Linux but check if you have issues depending your eclipse install or if your running this without an IDE
 		try {
 			Image myImage = ImageIO.read(TextureToLoad); 
-			 g.drawImage(myImage, 0,0, 1000, 1000, 0 , 0, 1000, 1000, null); 
+			 g.drawImage(myImage, 0,0, 1500, 1500, 0 , 0, 1000, 1000, null);
 			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -139,8 +119,7 @@ public class Viewer extends JPanel {
 		}
 	}
 	
-	private void drawBullet(int x, int y, int width, int height, String texture,Graphics g)
-	{
+	private void drawBullet(int x, int y, int width, int height, String texture,Graphics g){
 		File TextureToLoad = new File(texture);  //should work okay on OSX and Linux but check if you have issues depending your eclipse install or if your running this without an IDE 
 		try {
 			Image myImage = ImageIO.read(TextureToLoad); 
@@ -174,9 +153,6 @@ public class Viewer extends JPanel {
 		// background image from https://www.needpix.com/photo/download/677346/space-stars-nebula-background-galaxy-universe-free-pictures-free-photos-free-images
 		
 	}
-		 
-	 
-
 }
 
 
