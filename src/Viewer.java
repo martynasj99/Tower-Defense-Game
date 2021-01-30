@@ -14,7 +14,10 @@ import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
+import map.MapManager;
+import map.Node;
 import util.GameObject;
+import util.Point3f;
 
 
 /*
@@ -46,7 +49,8 @@ SOFTWARE.
 public class Viewer extends JPanel {
 	private long CurrentAnimationTime= 0; 
 	
-	Model gameworld =new Model(); 
+	private Model gameworld =new Model();
+	private MapManager mapManager = MapManager.getInstance();
 	 
 	public Viewer(Model World) {
 		this.gameworld=World;
@@ -85,10 +89,10 @@ public class Viewer extends JPanel {
 		int height = (int) gameworld.getPlayer().getHeight();
 		String texture = gameworld.getPlayer().getTexture();*/
 
-		drawBackground(g); //Draw background
+		drawBackground(g);
 		gameworld.getTowers().forEach((temp) -> drawPlayer((int) temp.getCentre().getX(), (int) temp.getCentre().getY(), (int) temp.getWidth(), (int) temp.getHeight(), temp.getTexture(), g));
-		gameworld.getBullets().forEach((temp) -> drawBullet((int) temp.getCentre().getX(), (int) temp.getCentre().getY(), (int) temp.getWidth(), (int) temp.getHeight(), temp.getTexture(), g)); //Draw bullets
-		gameworld.getEnemies().forEach((temp) -> drawEnemies((int) temp.getCentre().getX(), (int) temp.getCentre().getY(), (int) temp.getWidth(), (int) temp.getHeight(), temp.getTexture(),g)); //Draw Enemies
+		gameworld.getBullets().forEach((temp) -> drawBullet((int) temp.getCentre().getX(), (int) temp.getCentre().getY(), (int) temp.getWidth(), (int) temp.getHeight(), temp.getTexture(), g));
+		gameworld.getEnemies().forEach((temp) -> drawEnemies((int) temp.getCentre().getX(), (int) temp.getCentre().getY(), (int) temp.getWidth(), (int) temp.getHeight(), temp.getTexture(),g));
 
 	}
 	
@@ -108,14 +112,14 @@ public class Viewer extends JPanel {
 	}
 
 	private void drawBackground(Graphics g){
-		File TextureToLoad = new File("res/map01.jpg");  //should work okay on OSX and Linux but check if you have issues depending your eclipse install or if your running this without an IDE
-		try {
-			Image myImage = ImageIO.read(TextureToLoad); 
-			 g.drawImage(myImage, 0,0, 1500, 1500, 0 , 0, 1000, 1000, null);
-			
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		Node[][] nodes = mapManager.getMaps().get(0).getNodes();
+		mapManager.setCurrentMap(0);
+		for(int i = 0; i < nodes.length; i++){
+			for(int j = 0; j < nodes[0].length; j++){
+				Node node = nodes[i][j];
+				g.setColor(node.getColor());
+				g.fillRect((int) node.getPosition().getX(), (int) node.getPosition().getY(), node.getWidth(), node.getHeight());
+			}
 		}
 	}
 	

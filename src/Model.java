@@ -2,6 +2,9 @@ import java.util.ArrayList;
 import java.util.Random;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import map.Map;
+import map.MapManager;
+import map.Node;
 import util.GameObject;
 import util.Point3f;
 import util.Vector3f; 
@@ -32,6 +35,7 @@ SOFTWARE.
 public class Model {
 	private  GameObject Player;
 	private Controller controller = Controller.getInstance();
+	private MapManager mapManager = MapManager.getInstance();
 	private  CopyOnWriteArrayList<GameObject> EnemiesList  = new CopyOnWriteArrayList<GameObject>();
 	private  CopyOnWriteArrayList<GameObject> BulletList  = new CopyOnWriteArrayList<GameObject>();
 	private  CopyOnWriteArrayList<GameObject> towers  = new CopyOnWriteArrayList<GameObject>();
@@ -122,7 +126,12 @@ public class Model {
 	private void createTower(){
 		float x = controller.getMouseClickPosition().getX();
 		float y = controller.getMouseClickPosition().getY();
-		towers.add(new GameObject("res/Lightning.png",50,50,new Point3f(x,y,0)));
+		Map map = mapManager.getMaps().get(mapManager.getCurrentMap());
+		int nodeX = (int) x/mapManager.getNodeWidth();
+		int nodeY = (int) y/mapManager.getNodeHeight();
+		Node node = map.getNodes()[nodeX][nodeY];
+		System.out.println("X: " + x + "Y: " + y);
+		towers.add(new GameObject("res/Lightning.png",50,50,node.getPosition()));
 	}
 
 	public GameObject getPlayer() {
