@@ -79,7 +79,7 @@ public class Model {
 	private void enemyLogic() {
 		// TODO Auto-generated method stub
 		for (GameObject temp : EnemiesList){
-			temp.getCentre().ApplyVector(new Vector3f(0,-1,0)); // Move enemies
+			//temp.getCentre().ApplyVector(new Vector3f(0,-1,0)); // Move enemies
 
 			//see if they get to the top of the screen ( remember 0 is the top 
 			if (temp.getCentre().getY()==900.0f){  // current boundary need to pass value to model
@@ -88,11 +88,11 @@ public class Model {
 			} 
 		}
 		
-		if (EnemiesList.size()<2){
+/*		if (EnemiesList.size()<2){
 			while (EnemiesList.size()<6) {
 				EnemiesList.add(new GameObject("res/UFO.png",50,50,new Point3f(((float)Math.random()*1000),0,0))); 
 			}
-		}
+		}*/
 	}
 
 	private void bulletLogic() {
@@ -127,11 +127,12 @@ public class Model {
 		float x = controller.getMouseClickPosition().getX();
 		float y = controller.getMouseClickPosition().getY();
 		Map map = mapManager.getMaps().get(mapManager.getCurrentMap());
-		int nodeX = (int) x/mapManager.getNodeWidth();
-		int nodeY = (int) y/mapManager.getNodeHeight();
-		Node node = map.getNodes()[nodeX][nodeY];
+		float nodeX = x/map.getNodeWidth();
+		float nodeY = y/map.getNodeHeight();
+		Node node = map.getNodes()[(int) nodeX][(int) nodeY];
 		System.out.println("X: " + x + "Y: " + y);
-		towers.add(new GameObject("res/Lightning.png",50,50,node.getPosition()));
+		towers.add(new GameObject("res/Lightning.png",50,50,
+				new Point3f(node.getPosition().getX()+(map.getNodeWidth()/2)-25, node.getPosition().getY()+(map.getNodeHeight()/2)-25, 0)));
 	}
 
 	public GameObject getPlayer() {

@@ -118,7 +118,7 @@ public class Viewer extends JPanel {
 			for(int j = 0; j < nodes[0].length; j++){
 				Node node = nodes[i][j];
 				g.setColor(node.getColor());
-				g.fillRect((int) node.getPosition().getX(), (int) node.getPosition().getY(), node.getWidth(), node.getHeight());
+				g.fillRect((int) node.getPosition().getX(), (int) node.getPosition().getY(), (int) node.getWidth(), (int) node.getHeight());
 			}
 		}
 	}

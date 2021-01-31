@@ -16,6 +16,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import map.MapManager;
 import util.UnitTests;
 
 /*
@@ -48,16 +49,18 @@ public class MainWindow {
 	 private static Model gameworld = new Model();
 	 private static Viewer canvas = new Viewer( gameworld);
 	 private MouseListener Controller = new Controller();
+	 private MapManager mapManager = MapManager.getInstance();
+
 	 private static int TargetFPS = 100;
 	 private static boolean startGame= false; 
 	 private JLabel BackgroundImageForStartMenu;
 	  
 	public MainWindow() {
-		frame.setSize(1000, 1000);  // you can customise this later and adapt it to change on size.
+		frame.setSize(mapManager.getScreenWidth()+200, mapManager.getScreenHeight());  // you can customise this later and adapt it to change on size.
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); //If exit // you can modify with your way of quitting , just is a template.
 		frame.setLayout(null);
 		frame.add(canvas);
-		canvas.setBounds(0, 0, 1000, 1000);
+		canvas.setBounds(0, 0, mapManager.getScreenWidth()+200, mapManager.getScreenHeight());
 		canvas.setBackground(new Color(255,255,255)); //white background  replaced by Space background but if you remove the background method this will draw a white screen
 		canvas.setVisible(false); // this will become visible after you press the key.
 
@@ -79,7 +82,7 @@ public class MainWindow {
 			try {
 				BufferedImage myPicture = ImageIO.read(BackroundToLoad);
 				BackgroundImageForStartMenu = new JLabel(new ImageIcon(myPicture));
-				BackgroundImageForStartMenu.setBounds(0, 0, 1000, 1000);
+				BackgroundImageForStartMenu.setBounds(0, 0, mapManager.getScreenWidth()+200, mapManager.getScreenHeight());
 				frame.add(BackgroundImageForStartMenu); 
 			} catch (IOException e) {
 				e.printStackTrace();

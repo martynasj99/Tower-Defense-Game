@@ -6,13 +6,14 @@ import java.awt.*;
 
 public class Node {
 
-    private int width;
-    private int height;
+    private float width;
+    private float height;
     private Color color;
     private Point3f position;
     private boolean isAvailable; //DEFINES WHETHER OR NOT YOU CAN PLACE TOWERS ON THIS NODE
 
-    public Node(int width, int height, Color color, Point3f position, boolean isAvailable) {
+
+    public Node(float width, float height, Color color, Point3f position, boolean isAvailable) {
         this.width = width;
         this.height = height;
         this.color = color;
@@ -20,19 +21,19 @@ public class Node {
         this.isAvailable = isAvailable;
     }
 
-    public int getWidth() {
+    public float getWidth() {
         return width;
     }
 
-    public void setWidth(int width) {
+    public void setWidth(float width) {
         this.width = width;
     }
 
-    public int getHeight() {
+    public float getHeight() {
         return height;
     }
 
-    public void setHeight(int height) {
+    public void setHeight(float height) {
         this.height = height;
     }
 
