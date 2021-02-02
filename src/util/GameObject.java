@@ -36,7 +36,7 @@ public class GameObject {
 		
 	}
 	
-    public GameObject(String textureLocation,int width,int height,Point3f centre) { 
+    public GameObject(String textureLocation,int width,int height, Point3f centre) {
     	 hasTextured=true;
     	 this.textureLocation=textureLocation;
     	 this.width=width;

@@ -76,24 +76,15 @@ public class Viewer extends JPanel {
 		this.repaint();
 		// TODO Auto-generated method stub
 	}
-	
-	
+
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
-		CurrentAnimationTime++; // runs animation time step 
-
-		//Draw player Game Object 
-/*		int x = (int) gameworld.getPlayer().getCentre().getX();
-		int y = (int) gameworld.getPlayer().getCentre().getY();
-		int width = (int) gameworld.getPlayer().getWidth();
-		int height = (int) gameworld.getPlayer().getHeight();
-		String texture = gameworld.getPlayer().getTexture();*/
+		CurrentAnimationTime++; // runs animation time step
 
 		drawBackground(g);
 		gameworld.getTowers().forEach((temp) -> drawPlayer((int) temp.getCentre().getX(), (int) temp.getCentre().getY(), (int) temp.getWidth(), (int) temp.getHeight(), temp.getTexture(), g));
 		gameworld.getBullets().forEach((temp) -> drawBullet((int) temp.getCentre().getX(), (int) temp.getCentre().getY(), (int) temp.getWidth(), (int) temp.getHeight(), temp.getTexture(), g));
 		gameworld.getEnemies().forEach((temp) -> drawEnemies((int) temp.getCentre().getX(), (int) temp.getCentre().getY(), (int) temp.getWidth(), (int) temp.getHeight(), temp.getTexture(),g));
-
 	}
 	
 	private void drawEnemies(int x, int y, int width, int height, String texture, Graphics g) {
@@ -135,7 +126,6 @@ public class Viewer extends JPanel {
 			e.printStackTrace();
 		}
 	}
-	
 
 	private void drawPlayer(int x, int y, int width, int height, String texture,Graphics g) { 
 		File TextureToLoad = new File(texture);  //should work okay on OSX and Linux but check if you have issues depending your eclipse install or if your running this without an IDE 

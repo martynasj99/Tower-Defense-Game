@@ -109,9 +109,15 @@ public class MainWindow {
 	//Basic Model-View-Controller pattern 
 	private static void gameloop() {
 		// controller input  will happen on its own thread So no need to call it explicitly
-		gameworld.gamelogic(); // model update
-		canvas.updateview(); // view update
-		
+/*		Thread thread1 = new Thread(() -> gameworld.gamelogic());
+		Thread thread2 = new Thread(() -> canvas.updateview());
+
+		thread1.start();
+		thread2.start();*/
+		canvas.updateview();
+		gameworld.gamelogic();
+
+
 		// Both these calls could be setup as  a thread but we want to simplify the game logic for you.
 		frame.setTitle("Score =  "+ gameworld.getScore());
 	}

@@ -2,6 +2,8 @@ import java.util.ArrayList;
 import java.util.Random;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import GameObjects.Enemy;
+import GameObjects.Turret;
 import map.Map;
 import map.MapManager;
 import map.Node;
@@ -36,29 +38,26 @@ public class Model {
 	private  GameObject Player;
 	private Controller controller = Controller.getInstance();
 	private MapManager mapManager = MapManager.getInstance();
-	private  CopyOnWriteArrayList<GameObject> EnemiesList  = new CopyOnWriteArrayList<GameObject>();
+	private  CopyOnWriteArrayList<Enemy> EnemiesList  = new CopyOnWriteArrayList<>();
 	private  CopyOnWriteArrayList<GameObject> BulletList  = new CopyOnWriteArrayList<GameObject>();
 	private  CopyOnWriteArrayList<GameObject> towers  = new CopyOnWriteArrayList<GameObject>();
 	private int Score=0;
+	private Map currentMap;
 
 	public Model() {
-		 //setup game world 
-		//Player 
-	//	Player= new GameObject("res/Lightning.png",50,50,new Point3f(500,500,0));
+		currentMap =  mapManager.getMaps().get(mapManager.getCurrentMap());
 
-		//Enemies  starting with four
-/*		EnemiesList.add(new GameObject("res/UFO.png",50,50,new Point3f(((float)Math.random()*50+400 ),0,0)));
-		EnemiesList.add(new GameObject("res/UFO.png",50,50,new Point3f(((float)Math.random()*50+500 ),0,0)));
-		EnemiesList.add(new GameObject("res/UFO.png",50,50,new Point3f(((float)Math.random()*100+500 ),0,0)));
-		EnemiesList.add(new GameObject("res/UFO.png",50,50,new Point3f(((float)Math.random()*100+400 ),0,0)));*/
+		EnemiesList.add(new Enemy("res/UFO.png",50,50,
+				new Point3f(currentMap.getEnemyPath().get(0).getPosition().getX(),
+						currentMap.getEnemyPath().get(0).getPosition().getY(),0), 1));
 	}
 	
 	// This is the heart of the game , where the model takes in all the inputs ,decides the outcomes and then changes the model accordingly. 
 	public void gamelogic() {
-		playerLogic(); // Player Logic first
-		enemyLogic(); // Enemy Logic next
-		bulletLogic(); // Bullets move next
-		gameLogic(); // interactions between objects
+		playerLogic();
+		enemyLogic();
+		bulletLogic();
+		gameLogic();
 	}
 
 	private void gameLogic() {
@@ -77,27 +76,30 @@ public class Model {
 	}
 
 	private void enemyLogic() {
-		// TODO Auto-generated method stub
-		for (GameObject temp : EnemiesList){
-			//temp.getCentre().ApplyVector(new Vector3f(0,-1,0)); // Move enemies
+		for (Enemy temp : EnemiesList){
+			Point3f curr = temp.getCentre();
+			Point3f dest = currentMap.getEnemyPath().get(temp.getProgress()+1).getPosition();
+			Point3f diff = new Point3f(curr.getX()-dest.getX(), curr.getY()-dest.getY(), 0);
+			Vector3f direction;
 
-			//see if they get to the top of the screen ( remember 0 is the top 
-			if (temp.getCentre().getY()==900.0f){  // current boundary need to pass value to model
+			if(diff.getX() == 0 && diff.getY() == 0) {
+				temp.setProgress(temp.getProgress() + 1);
+				direction = new Vector3f(0,0,0);
+			}
+			else if(diff.getX() == 0.0)
+				direction = new Vector3f(0, diff.getY() < 0 ? -1 : 1, 0);
+			else
+				direction = new Vector3f(diff.getX() < 0 ? 1 : -1, 0, 0 );
+
+			temp.getCentre().ApplyVector(direction);
+			if (temp.getProgress() == currentMap.getEnemyPath().size()-1){
 				EnemiesList.remove(temp);
-				Score--; // enemies win so score decreased
+				Score--;
 			} 
 		}
-		
-/*		if (EnemiesList.size()<2){
-			while (EnemiesList.size()<6) {
-				EnemiesList.add(new GameObject("res/UFO.png",50,50,new Point3f(((float)Math.random()*1000),0,0))); 
-			}
-		}*/
 	}
 
 	private void bulletLogic() {
-		// TODO Auto-generated method stub
-
 		for (GameObject temp : BulletList){ // move bullets
 			temp.getCentre().ApplyVector(new Vector3f(0,1,0)); //check to move them
 			//see if they hit anything 
@@ -126,20 +128,33 @@ public class Model {
 	private void createTower(){
 		float x = controller.getMouseClickPosition().getX();
 		float y = controller.getMouseClickPosition().getY();
-		Map map = mapManager.getMaps().get(mapManager.getCurrentMap());
-		float nodeX = x/map.getNodeWidth();
-		float nodeY = y/map.getNodeHeight();
-		Node node = map.getNodes()[(int) nodeX][(int) nodeY];
-		System.out.println("X: " + x + "Y: " + y);
-		towers.add(new GameObject("res/Lightning.png",50,50,
-				new Point3f(node.getPosition().getX()+(map.getNodeWidth()/2)-25, node.getPosition().getY()+(map.getNodeHeight()/2)-25, 0)));
+
+		int nodeX = (int) (x/currentMap.getNodeWidth());
+		int nodeY = (int) (y/currentMap.getNodeHeight());
+		Node[][] nodes = currentMap.getNodes();
+
+		if(nodeX >= nodes.length || nodeY >= nodes[0].length) return;
+
+		Node node = currentMap.getNodes()[nodeY][nodeX];
+		if(node.isAvailable()){
+			Turret turret = new Turret("res/Lightning.png",50,50,
+					new Point3f(node.getPosition().getX()+(currentMap.getNodeWidth()/2)-25, node.getPosition().getY()+(currentMap.getNodeHeight()/2)-25, 0), "Standard",
+					1,1,1);
+
+			currentMap.useNode(nodeY,nodeX);
+			node.setTurret(turret);
+			towers.add(turret);
+		}else{
+			System.out.println("CANNOT PLACE HERE!");
+		}
+
 	}
 
 	public GameObject getPlayer() {
 		return Player;
 	}
 
-	public CopyOnWriteArrayList<GameObject> getEnemies() {
+	public CopyOnWriteArrayList<Enemy> getEnemies() {
 		return EnemiesList;
 	}
 	

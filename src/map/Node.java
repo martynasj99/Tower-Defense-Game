@@ -1,5 +1,7 @@
 package map;
 
+import GameObjects.Turret;
+import util.GameObject;
 import util.Point3f;
 
 import java.awt.*;
@@ -11,6 +13,7 @@ public class Node {
     private Color color;
     private Point3f position;
     private boolean isAvailable; //DEFINES WHETHER OR NOT YOU CAN PLACE TOWERS ON THIS NODE
+    private Turret turret;
 
 
     public Node(float width, float height, Color color, Point3f position, boolean isAvailable) {
@@ -19,6 +22,7 @@ public class Node {
         this.color = color;
         this.position = position;
         this.isAvailable = isAvailable;
+        this.turret = null;
     }
 
     public float getWidth() {
@@ -59,5 +63,13 @@ public class Node {
 
     public void setAvailable(boolean available) {
         isAvailable = available;
+    }
+
+    public Turret getTurret() {
+        return turret;
+    }
+
+    public void setTurret(Turret turret) {
+        this.turret = turret;
     }
 }

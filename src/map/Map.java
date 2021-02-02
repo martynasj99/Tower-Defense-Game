@@ -3,6 +3,9 @@ package map;
 import util.Point3f;
 
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class Map {
 
@@ -13,7 +16,10 @@ public class Map {
     private float nodeWidth;
     private float nodeHeight;
 
+    private List<Node> enemyPath;
+
     public Map(int screenWidth, int screenHeight, int[][] configuration) {
+        this.enemyPath = new ArrayList<>();
         this.configuration = configuration;
         this.screenWidth = screenWidth;
         this.screenHeight = screenHeight;
@@ -23,19 +29,24 @@ public class Map {
     public void configure(){
         int nw = configuration.length;
         int nh = configuration[0].length;
-        nodeWidth = (screenWidth/nw);
-        nodeHeight = (screenHeight/nh);
+        nodeWidth = (float) screenWidth/nw;
+        nodeHeight = (float) screenHeight/nh;
 
         this.nodes = new Node[nw][nh];
         for(int i = 0; i < nodes.length; i++){
             for(int j = 0; j < nodes[0].length; j++){
                 if(configuration[i][j] == 0)
-                    nodes[i][j] = new Node(nodeWidth-1, nodeHeight-1, Color.GREEN, new Point3f((i*nodeWidth), (j*nodeHeight),0), true);
+                    nodes[i][j] = new Node(nodeWidth-1, nodeHeight-1, Color.GREEN, new Point3f((j*nodeWidth), (i*nodeHeight),0), true);
                 else{
-                    nodes[i][j] = new Node(nodeWidth-1, nodeHeight-1, new Color(102,71,0), new Point3f((i*nodeWidth), (j*nodeHeight),0), false);
+                    nodes[i][j] = new Node(nodeWidth-1, nodeHeight-1, new Color(102,71,0), new Point3f((j*nodeWidth), (i*nodeHeight),0), false);
                 }
             }
         }
+        this.enemyPath.addAll(Arrays.asList(nodes[0][3], nodes[3][3], nodes[3][7], nodes[5][7], nodes[5][2], nodes[9][2]));
+    }
+
+    public void useNode(int y, int x){
+        this.nodes[y][x].setAvailable(false);
     }
 
     public Node[][] getNodes() {
@@ -84,5 +95,13 @@ public class Map {
 
     public void setNodeHeight(float nodeHeight) {
         this.nodeHeight = nodeHeight;
+    }
+
+    public List<Node> getEnemyPath() {
+        return enemyPath;
+    }
+
+    public void setEnemyPath(List<Node> enemyPath) {
+        this.enemyPath = enemyPath;
     }
 }
