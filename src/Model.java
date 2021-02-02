@@ -35,12 +35,14 @@ SOFTWARE.
    (MIT LICENSE ) e.g do what you want with this :-) 
  */ 
 public class Model {
-	private  GameObject Player;
+
 	private Controller controller = Controller.getInstance();
 	private MapManager mapManager = MapManager.getInstance();
+
 	private  CopyOnWriteArrayList<Enemy> EnemiesList  = new CopyOnWriteArrayList<>();
 	private  CopyOnWriteArrayList<GameObject> BulletList  = new CopyOnWriteArrayList<GameObject>();
-	private  CopyOnWriteArrayList<GameObject> towers  = new CopyOnWriteArrayList<GameObject>();
+	private  CopyOnWriteArrayList<Turret> towers  = new CopyOnWriteArrayList<Turret>();
+
 	private int Score=0;
 	private Map currentMap;
 
@@ -51,7 +53,19 @@ public class Model {
 				new Point3f(currentMap.getEnemyPath().get(0).getPosition().getX(),
 						currentMap.getEnemyPath().get(0).getPosition().getY(),0), 1));
 	}
-	
+
+	public void spawn(){
+		EnemiesList.add(new Enemy("res/UFO.png",50,50,
+				new Point3f(currentMap.getEnemyPath().get(0).getPosition().getX(),
+						currentMap.getEnemyPath().get(0).getPosition().getY(),0), 1));
+	}
+
+	public void fire(){
+		for(Turret turret : towers){
+			BulletList.add(new GameObject("res/Bullet.png",32,64,new Point3f(turret.getCentre().getX(),turret.getCentre().getY(),0.0f)));
+		}
+	}
+
 	// This is the heart of the game , where the model takes in all the inputs ,decides the outcomes and then changes the model accordingly. 
 	public void gamelogic() {
 		playerLogic();
@@ -101,9 +115,7 @@ public class Model {
 
 	private void bulletLogic() {
 		for (GameObject temp : BulletList){ // move bullets
-			temp.getCentre().ApplyVector(new Vector3f(0,1,0)); //check to move them
-			//see if they hit anything 
-
+			temp.getCentre().ApplyVector(new Vector3f(0,1,0));
 			if (temp.getCentre().getY()==0) { //see if they get to the top of the screen ( remember 0 is the top
 			 	BulletList.remove(temp);
 			} 
@@ -113,16 +125,10 @@ public class Model {
 	private void playerLogic() {
 		// smoother animation is possible if we make a target position  // done but may try to change things for students
 		//check for movement and if you fired a bullet
-//		if(Controller.getInstance().isKeyAPressed()){Player.getCentre().ApplyVector( new Vector3f(-2,0,0)); } //E.G. OF MOVEMENT
-
 		if(Controller.isMouseClicked()) { //CREATE A TOWER WHEREVER YOU CLICK ON THE MAP
 			createTower();
 			Controller.getInstance().setMouseClicked(false);
 		}
-	}
-
-	private void CreateBullet(){
-		BulletList.add(new GameObject("res/Bullet.png",32,64,new Point3f(Player.getCentre().getX(),Player.getCentre().getY(),0.0f)));
 	}
 
 	private void createTower(){
@@ -147,11 +153,6 @@ public class Model {
 		}else{
 			System.out.println("CANNOT PLACE HERE!");
 		}
-
-	}
-
-	public GameObject getPlayer() {
-		return Player;
 	}
 
 	public CopyOnWriteArrayList<Enemy> getEnemies() {
@@ -162,7 +163,7 @@ public class Model {
 		return BulletList;
 	}
 
-	public CopyOnWriteArrayList<GameObject> getTowers() {
+	public CopyOnWriteArrayList<Turret> getTowers() {
 		return towers;
 	}
 

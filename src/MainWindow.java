@@ -8,6 +8,8 @@ import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
@@ -47,7 +49,7 @@ SOFTWARE.
 public class MainWindow {
 	 private static JFrame frame = new JFrame("Game");   // Change to the name of your game
 	 private static Model gameworld = new Model();
-	 private static Viewer canvas = new Viewer( gameworld);
+	 private static Viewer canvas = new Viewer(gameworld);
 	 private MouseListener Controller = new Controller();
 	 private MapManager mapManager = MapManager.getInstance();
 
@@ -64,61 +66,77 @@ public class MainWindow {
 		canvas.setBackground(new Color(255,255,255)); //white background  replaced by Space background but if you remove the background method this will draw a white screen
 		canvas.setVisible(false); // this will become visible after you press the key.
 
-		JButton startMenuButton = new JButton("Start Game");  // start button
-		startMenuButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				startMenuButton.setVisible(false);
-				BackgroundImageForStartMenu.setVisible(false);
-				canvas.setVisible(true);
-				canvas.addMouseListener(Controller); //adding the controller to the Canvas
-	            canvas.requestFocusInWindow(); // making sure that the Canvas is in focus so keyboard input will be taking in .
-				startGame=true;
-			}});
-	        startMenuButton.setBounds(400, 500, 200, 40); 
-	        
-	        //loading background image 
-	        File BackroundToLoad = new File("res/startscreen.png");  //should work okay on OSX and Linux but check if you have issues depending your eclipse install or if your running this without an IDE 
-			try {
-				BufferedImage myPicture = ImageIO.read(BackroundToLoad);
-				BackgroundImageForStartMenu = new JLabel(new ImageIcon(myPicture));
-				BackgroundImageForStartMenu.setBounds(0, 0, mapManager.getScreenWidth()+200, mapManager.getScreenHeight());
-				frame.add(BackgroundImageForStartMenu); 
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			frame.add(startMenuButton);
-	        frame.setVisible(true);
+		JButton startMenuButton = new JButton("Start Game");
+		startMenuButton.addActionListener(e -> {
+			startMenuButton.setVisible(false);
+			BackgroundImageForStartMenu.setVisible(false);
+			canvas.setVisible(true);
+			canvas.addMouseListener(Controller);
+			canvas.requestFocusInWindow(); // making sure that the Canvas is in focus so keyboard input will be taking in .
+			startGame=true;
+			scheduleSpawn();
+			scheduleFire();
+		});
+		startMenuButton.setBounds(400, 500, 200, 40);
+
+		File BackgroundToLoad = new File("res/startscreen.png");
+		try {
+			BufferedImage myPicture = ImageIO.read(BackgroundToLoad);
+			BackgroundImageForStartMenu = new JLabel(new ImageIcon(myPicture));
+			BackgroundImageForStartMenu.setBounds(0, 0, mapManager.getScreenWidth()+200, mapManager.getScreenHeight());
+			frame.add(BackgroundImageForStartMenu);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		frame.add(startMenuButton);
+		frame.setVisible(true);
 	}
 
 	public static void main(String[] args) {
-		MainWindow main = new MainWindow();  //sets up environment
-		while(true){   //not nice but remember we do just want to keep looping till the end.  // this could be replaced by a thread but again we want to keep things simple
-			//swing has timer class to help us time this but I'm writing my own, you can of course use the timer, but I want to set FPS and display it
-			int TimeBetweenFrames =  1000 / TargetFPS;
-			long FrameCheck = System.currentTimeMillis() + (long) TimeBetweenFrames; 
+		MainWindow main = new MainWindow();
 
-			while (FrameCheck > System.currentTimeMillis()){} //wait till next time step
-			if(startGame) {
-				gameloop();
+		Thread game = new Thread(() -> {
+			while(true){
+				//swing has timer class to help us time this but I'm writing my own, you can of course use the timer, but I want to set FPS and display it
+				int TimeBetweenFrames =  1000 / TargetFPS;
+				long FrameCheck = System.currentTimeMillis() + (long) TimeBetweenFrames;
+
+				while (FrameCheck > System.currentTimeMillis()){} //wait till next time step
+				if(startGame) {
+					gameloop();
+				}
+				UnitTests.CheckFrameRate(System.currentTimeMillis(),FrameCheck, TargetFPS);
 			}
-			UnitTests.CheckFrameRate(System.currentTimeMillis(),FrameCheck, TargetFPS); //UNIT test to see if framerate matches
-		}
+		});
+
+		game.run();
+	}
+	private void scheduleSpawn(){
+		TimerTask task = new TimerTask() {
+			@Override
+			public void run() {
+				gameworld.spawn();
+			}
+		};
+		Timer timer = new Timer("spawner");
+		timer.scheduleAtFixedRate(task, 2000L, 2000L);
 	}
 
-	//Basic Model-View-Controller pattern 
-	private static void gameloop() {
-		// controller input  will happen on its own thread So no need to call it explicitly
-/*		Thread thread1 = new Thread(() -> gameworld.gamelogic());
-		Thread thread2 = new Thread(() -> canvas.updateview());
+	private void scheduleFire(){
+		TimerTask task = new TimerTask() {
+			@Override
+			public void run() {
+				gameworld.fire();
+			}
+		};
+		Timer timer = new Timer("spawner");
+		timer.scheduleAtFixedRate(task, 1000L, 2000L);
+	}
 
-		thread1.start();
-		thread2.start();*/
+	private static void gameloop() {
+		//TODO Set up as thread.
 		canvas.updateview();
 		gameworld.gamelogic();
-
-
-		// Both these calls could be setup as  a thread but we want to simplify the game logic for you.
 		frame.setTitle("Score =  "+ gameworld.getScore());
 	}
 }
