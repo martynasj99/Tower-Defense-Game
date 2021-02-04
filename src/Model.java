@@ -68,8 +68,8 @@ public class Model {
 	private void gameLogic() {
 		for (GameObject temp : EnemiesList) {
 			for (GameObject Bullet : BulletList){
-				if ( Math.abs(temp.getCentre().getX()- Bullet.getCentre().getX())< temp.getWidth()
-					&& Math.abs(temp.getCentre().getY()- Bullet.getCentre().getY()) < temp.getHeight()){
+				if ( Math.abs(temp.getCentre().getX()- Bullet.getCentre().getX())< temp.getWidth()/2
+					&& Math.abs(temp.getCentre().getY()- Bullet.getCentre().getY()) < temp.getHeight()/2){
 					EnemiesList.remove(temp);
 					BulletList.remove(Bullet);
 					Score++;
@@ -136,7 +136,7 @@ public class Model {
 		if(node.isAvailable()){
 			Point3f turretLocation = new Point3f(node.getPosition().getX()+(currentMap.getNodeWidth()/2)-25, node.getPosition().getY()+(currentMap.getNodeHeight()/2)-25, 0);
 			Bullet turretBullet = new Bullet("res/Bullet.png",10,10, new Point3f(turretLocation.getX(), turretLocation.getY(),0));
-			Turret turret = new Turret("res/Lightning.png",50,50, turretLocation, "Standard", 1,1,1, turretBullet);
+			Turret turret = new Turret("res/Lightning.png",50,50, turretLocation, "Standard", 1,1,200, turretBullet);
 
 			currentMap.useNode(nodeY,nodeX);
 			node.setTurret(turret);
@@ -155,24 +155,36 @@ public class Model {
 
 	public void fire(){
 		for(Turret turret : towers){
+			turret.setTarget(null);
+			for(Enemy enemy : EnemiesList){
+				if(enemy.getCentre().getX() >= turret.getCentre().getX()-turret.getRange() &&
+						enemy.getCentre().getX() <= turret.getCentre().getX()+turret.getRange() &&
+						enemy.getCentre().getY() >= turret.getCentre().getY()-turret.getRange() &&
+						enemy.getCentre().getY() <= turret.getCentre().getY()+turret.getRange()){
+					turret.setTarget(enemy);
+					break;
+				}
+			}
+			if(turret.getTarget() == null) continue;
+
 			Bullet bullet = turret.getBullet();
 			Point3f tur = turret.getCentre();
 			Point3f target;
-			if(EnemiesList.size() > 0)
-				target = EnemiesList.get(0).getCentre();
-			else
-				return;
+			target = turret.getTarget().getCentre();
 
 			float diff_x = target.getX() - tur.getX();
 			float diff_y = (target.getY() - tur.getY())*-1;
 
 			float max = Math.max(Math.abs(diff_x), Math.abs(diff_y));
-			Vector3f dir = new Vector3f((diff_x/max)*4, (diff_y/max)*4, 0);
+			Vector3f dir = new Vector3f((diff_x/max)*8, (diff_y/max)*8, 0);
 
 			bullet.setDirection(dir);
 			bullet.setCentre(new Point3f(turret.getCentre().getX(), turret.getCentre().getY(), 0));
 			BulletList.add(bullet);
 		}
+	}
+
+	public void getTargets(){
 	}
 
 	public CopyOnWriteArrayList<Enemy> getEnemies() {

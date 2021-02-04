@@ -41,7 +41,7 @@ public class MainWindow {
 	 private static JFrame frame = new JFrame("Tower Defense Game");   // Change to the name of your game
 	 private static Model gameworld = new Model();
 	 private static Viewer canvas = new Viewer(gameworld);
-	 private MouseListener Controller = new Controller();
+	 private Controller controller = new Controller();
 	 private MapManager mapManager = MapManager.getInstance();
 
 	 private static int TargetFPS = 100;
@@ -70,7 +70,8 @@ public class MainWindow {
 			startMenuButton.setVisible(false);
 			backgroundImageForStartMenu.setVisible(false);
 			canvas.setVisible(true);
-			canvas.addMouseListener(Controller);
+			canvas.addMouseListener(controller);
+			canvas.addMouseMotionListener(controller);
 			canvas.requestFocusInWindow(); // making sure that the Canvas is in focus so keyboard input will be taking in .
 			startGame=true;
 			scheduleSpawn();
@@ -129,7 +130,7 @@ public class MainWindow {
 			}
 		};
 		Timer timer = new Timer("spawner");
-		timer.scheduleAtFixedRate(task, 1000L, 2000L);
+		timer.scheduleAtFixedRate(task, 0L, 2000L);
 	}
 
 	private static void gameloop() {
@@ -137,6 +138,5 @@ public class MainWindow {
 		canvas.updateview();
 		gameworld.gamelogic();
 		frame.setTitle("Score =  "+ gameworld.getScore());
-
 	}
 }

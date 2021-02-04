@@ -11,6 +11,7 @@ public class Turret extends GameObject {
     private int speed;
     private float range;
     private Bullet bullet;
+    private Enemy target;
 
     public Turret() {
         super();
@@ -24,7 +25,7 @@ public class Turret extends GameObject {
         this.speed = speed;
         this.range = range;
         this.bullet = bullet;
-
+        this.target = null;
     }
 
     public String getType() {
@@ -73,5 +74,13 @@ public class Turret extends GameObject {
 
     public void setBullet(Bullet bullet) {
         this.bullet = bullet;
+    }
+
+    public Enemy getTarget() {
+        return target;
+    }
+
+    public void setTarget(Enemy target) {
+        this.target = target;
     }
 }

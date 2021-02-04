@@ -1,9 +1,6 @@
 import util.Point3f;
 
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
+import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -33,11 +30,12 @@ SOFTWARE.
  */ 
 
 //Singeton pattern
-public class Controller implements MouseListener {
+public class Controller implements MouseListener, MouseMotionListener {
 
 	private static boolean MouseClicked = false;
 	private static final Controller instance = new Controller();
 	private static Point3f mouseClickPosition = new Point3f();
+	private static Point3f mouseMovePosition = new Point3f();
 	   
 	public Controller() {
 	}
@@ -63,11 +61,24 @@ public class Controller implements MouseListener {
 
 	@Override
 	public void mouseEntered(MouseEvent e) {
+
 	}
 
 	@Override
 	public void mouseExited(MouseEvent e) {
 	}
+
+	@Override
+	public void mouseDragged(MouseEvent e) {
+
+	}
+
+	@Override
+	public void mouseMoved(MouseEvent e) {
+		System.out.println("X: " + e.getX() + "Y: " + e.getY());
+		setMouseMovePosition(new Point3f(e.getX(), e.getY(), 0));
+	}
+
 
 	public static boolean isMouseClicked() {
 		return MouseClicked;
@@ -84,54 +95,12 @@ public class Controller implements MouseListener {
 	public void setMouseClickPosition(Point3f mouseClickPosition) {
 		this.mouseClickPosition = mouseClickPosition;
 	}
+
+	public Point3f getMouseMovePosition() {
+		return mouseMovePosition;
+	}
+
+	public static void setMouseMovePosition(Point3f mouseMovePosition) {
+		Controller.mouseMovePosition = mouseMovePosition;
+	}
 }
-
-/*
- * 
- * KEYBOARD :-) . can you add a mouse or a gamepad 
-
- *@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ @@@@@@@@@@@@@@@
-
-  @@@     @@@@    @@@@    @@@@    @@@@     @@@     @@@     @@@     @@@     @@@  
-
-  @@@     @@@     @@@     @@@@     @@@     @@@     @@@     @@@     @@@     @@@  
-
-  @@@     @@@     @@@     @@@@    @@@@     @@@     @@@     @@@     @@@     @@@  
-
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-
-@     @@@     @@@     @@@      @@      @@@     @@@     @@@     @@@     @@@     @
-
-@     @@@   W   @@@     @@@      @@      @@@     @@@     @@@     @@@     @@@     @
-
-@@    @@@@     @@@@    @@@@    @@@@    @@@@     @@@     @@@     @@@     @@@     @
-
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@N@@@@@@@@@@@@@@@@@@@@@@@@@@@
-
-@@@     @@@      @@      @@      @@      @@@     @@@     @@@     @@@     @@@    
-
-@@@   A   @@@  S     @@  D     @@      @@@     @@@     @@@     @@@     @@@     @@@    
-
-@@@@ @  @@@@@@@@@@@@ @@@@@@@    @@@@@@@@@@@@    @@@@@@@@@@@@     @@@@   @@@@@   
-
-    @@@     @@@@    @@@@    @@@@    $@@@     @@@     @@@     @@@     @@@     @@@
-
-    @@@ $   @@@      @@      @@ /Q   @@ ]M   @@@     @@@     @@@     @@@     @@@
-
-    @@@     @@@      @@      @@      @@      @@@     @@@     @@@     @@@     @@@
-
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-
-@       @@@                                                @@@       @@@       @
-
-@       @@@              SPACE KEY       @@@        @@ PQ     
-
-@       @@@                                                @@@        @@        
-
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
- * 
- * 
- * 
- * 
- * 
- */

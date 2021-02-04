@@ -14,6 +14,7 @@ import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
+import GameObjects.Turret;
 import map.MapManager;
 import map.Node;
 import util.GameObject;
@@ -51,6 +52,7 @@ public class Viewer extends JPanel {
 	
 	private Model gameworld =new Model();
 	private MapManager mapManager = MapManager.getInstance();
+	private Controller controller = Controller.getInstance();
 	 
 	public Viewer(Model World) {
 		this.gameworld=World;
@@ -77,7 +79,7 @@ public class Viewer extends JPanel {
 		CurrentAnimationTime++; // runs animation time step
 
 		drawBackground(g);
-		gameworld.getTowers().forEach((temp) -> drawPlayer((int) temp.getCentre().getX(), (int) temp.getCentre().getY(), (int) temp.getWidth(), (int) temp.getHeight(), temp.getTexture(), g));
+		gameworld.getTowers().forEach((temp) -> drawPlayer(temp, g));
 		gameworld.getBullets().forEach((temp) -> drawBullet((int) temp.getCentre().getX(), (int) temp.getCentre().getY(), (int) temp.getWidth(), (int) temp.getHeight(), temp.getTexture(), g));
 		gameworld.getEnemies().forEach((temp) -> drawEnemies((int) temp.getCentre().getX(), (int) temp.getCentre().getY(), (int) temp.getWidth(), (int) temp.getHeight(), temp.getTexture(),g));
 	}
@@ -117,7 +119,14 @@ public class Viewer extends JPanel {
 		g.fillArc(x,y,width, height, 0, 360);
 	}
 
-	private void drawPlayer(int x, int y, int width, int height, String texture,Graphics g) { 
+	private void drawPlayer(Turret player, Graphics g) {
+		String texture = player.getTexture();
+		int x = (int) player.getCentre().getX();
+		int y = (int) player.getCentre().getY();
+		int width = player.getWidth();
+		int height = player.getHeight();
+		int range = (int) player.getRange();
+
 		File TextureToLoad = new File(texture);
 		try {
 			Image myImage = ImageIO.read(TextureToLoad);
@@ -125,6 +134,13 @@ public class Viewer extends JPanel {
 			//remember your training :-) computer science everything starts at 0 so 32 pixels gets us to 31  
 			int currentPositionInAnimation= ((int) ((CurrentAnimationTime%40)/10))*32; //slows down animation so every 10 frames we get another frame so every 100ms 
 			g.drawImage(myImage, x,y, x+width, y+height, currentPositionInAnimation  , 0, currentPositionInAnimation+31, 32, null);
+			if(controller.getMouseMovePosition().getX() >= x &&
+					controller.getMouseMovePosition().getX() <= x+width &&
+					controller.getMouseMovePosition().getY() >= y  &&
+					controller.getMouseMovePosition().getY() <= y+height ){
+				g.setColor(Color.RED);
+				g.drawArc(x-(range/2),y-(range/2), width+range, height+range, 0, 360);
+			}
 
 		} catch (IOException e) {
 			e.printStackTrace();
