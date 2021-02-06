@@ -7,7 +7,7 @@ public class Turret extends GameObject {
 
     private String type;
     private int level;
-    private int damage;
+    private int cost;
     private int speed;
     private float range;
     private Bullet bullet;
@@ -17,11 +17,11 @@ public class Turret extends GameObject {
         super();
     }
 
-    public Turret(String textureLocation, int width, int height, Point3f centre, String type, int damage, int speed, float range, Bullet bullet) {
+    public Turret(String textureLocation, int width, int height, Point3f centre, String type, int cost, int speed, float range, Bullet bullet) {
         super(textureLocation, width, height, centre);
         this.type = type;
         this.level = 0;
-        this.damage = damage;
+        this.cost = cost;
         this.speed = speed;
         this.range = range;
         this.bullet = bullet;
@@ -42,14 +42,6 @@ public class Turret extends GameObject {
 
     public void setLevel(int level) {
         this.level = level;
-    }
-
-    public int getDamage() {
-        return damage;
-    }
-
-    public void setDamage(int damage) {
-        this.damage = damage;
     }
 
     public int getSpeed() {
@@ -82,5 +74,13 @@ public class Turret extends GameObject {
 
     public void setTarget(Enemy target) {
         this.target = target;
+    }
+
+    public int getCost() {
+        return cost;
+    }
+
+    public void setCost(int cost) {
+        this.cost = cost;
     }
 }

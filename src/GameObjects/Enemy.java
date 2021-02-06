@@ -14,6 +14,10 @@ public class Enemy extends GameObject {
         this.progress = 0;
     }
 
+    public void takeDamage(int amt){
+        this.health -= amt;
+    }
+
     public int getHealth() {
         return health;
     }

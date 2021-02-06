@@ -43,20 +43,23 @@ public class MainWindow {
 	 private static Viewer canvas = new Viewer(gameworld);
 	 private Controller controller = new Controller();
 	 private MapManager mapManager = MapManager.getInstance();
+	 private static GameManager gameManager = GameManager.getInstance();
 
 	 private static int TargetFPS = 100;
 	 private static boolean startGame= false;
 
 	 private JLabel backgroundImageForStartMenu;
-	  
+	 private static JLabel coins;
+
+
 	public MainWindow() {
 
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 		frame.setSize(mapManager.getScreenWidth()+200, mapManager.getScreenHeight());  // you can customise this later and adapt it to change on size.
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); //If exit // you can modify with your way of quitting , just is a template.
 		frame.setLayout(null);
-		frame.add(canvas);
-		canvas.setBounds(0, 0, mapManager.getScreenWidth()+200, mapManager.getScreenHeight());
+		frame.add(canvas, BorderLayout.CENTER);
+		canvas.setBounds(0, 0, mapManager.getScreenWidth(), mapManager.getScreenHeight());
 		canvas.setBackground(new Color(255,255,255)); //white background  replaced by Space background but if you remove the background method this will draw a white screen
 		canvas.setVisible(false); // this will become visible after you press the key.
 
@@ -64,12 +67,16 @@ public class MainWindow {
         startMenuButton.setBounds(400, 500, 200, 40);
 		startMenuButton.setVisible(true);
 
-
+		coins = new JLabel("COINS");
+		frame.add(coins);
+		coins.setBounds(mapManager.getScreenWidth(),0,200,50);
+		coins.setVisible(false);
 
 		startMenuButton.addActionListener(e -> {
 			startMenuButton.setVisible(false);
-			backgroundImageForStartMenu.setVisible(false);
+//			backgroundImageForStartMenu.setVisible(false);
 			canvas.setVisible(true);
+			coins.setVisible(true);
 			canvas.addMouseListener(controller);
 			canvas.addMouseMotionListener(controller);
 			canvas.requestFocusInWindow(); // making sure that the Canvas is in focus so keyboard input will be taking in .
@@ -78,17 +85,8 @@ public class MainWindow {
 			scheduleFire();
 		});
 
-		File BackgroundToLoad = new File("res/startscreen.png");
-		try {
-			BufferedImage myPicture = ImageIO.read(BackgroundToLoad);
-			backgroundImageForStartMenu = new JLabel(new ImageIcon(myPicture));
-			backgroundImageForStartMenu.setBounds(0, 0, mapManager.getScreenWidth()+200, mapManager.getScreenHeight());
-			frame.add(backgroundImageForStartMenu);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
 		frame.add(startMenuButton);
+
 		frame.setVisible(true);
 	}
 
@@ -137,6 +135,25 @@ public class MainWindow {
 		//TODO Set up as thread.
 		canvas.updateview();
 		gameworld.gamelogic();
+		coins.setText("Coins: " + gameManager.getCoins());
 		frame.setTitle("Score =  "+ gameworld.getScore());
+	}
+
+	private void setUpBackground(){
+		File BackgroundToLoad = new File("res/startscreen.png");
+		try {
+			BufferedImage myPicture = ImageIO.read(BackgroundToLoad);
+			backgroundImageForStartMenu = new JLabel(new ImageIcon(myPicture));
+			backgroundImageForStartMenu.setBounds(0, 0, mapManager.getScreenWidth()+200, mapManager.getScreenHeight());
+			frame.add(backgroundImageForStartMenu);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+
+
+	private void infoPanel(){
+
 	}
 }

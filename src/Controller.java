@@ -75,7 +75,6 @@ public class Controller implements MouseListener, MouseMotionListener {
 
 	@Override
 	public void mouseMoved(MouseEvent e) {
-		System.out.println("X: " + e.getX() + "Y: " + e.getY());
 		setMouseMovePosition(new Point3f(e.getX(), e.getY(), 0));
 	}
 

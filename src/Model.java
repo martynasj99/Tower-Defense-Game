@@ -41,6 +41,7 @@ public class Model {
 
 	private Controller controller = Controller.getInstance();
 	private MapManager mapManager = MapManager.getInstance();
+	private GameManager gameManager = GameManager.getInstance();
 
 	private  CopyOnWriteArrayList<Enemy> EnemiesList  = new CopyOnWriteArrayList<>();
 	private  CopyOnWriteArrayList<Bullet> BulletList  = new CopyOnWriteArrayList<>();
@@ -66,13 +67,18 @@ public class Model {
 	}
 
 	private void gameLogic() {
-		for (GameObject temp : EnemiesList) {
-			for (GameObject Bullet : BulletList){
-				if ( Math.abs(temp.getCentre().getX()- Bullet.getCentre().getX())< temp.getWidth()/2
-					&& Math.abs(temp.getCentre().getY()- Bullet.getCentre().getY()) < temp.getHeight()/2){
-					EnemiesList.remove(temp);
-					BulletList.remove(Bullet);
-					Score++;
+		for (Enemy temp : EnemiesList) {
+			for (Bullet bullet : BulletList){
+				if ( Math.abs(temp.getCentre().getX()- bullet.getCentre().getX())< temp.getWidth()/2
+					&& Math.abs(temp.getCentre().getY()- bullet.getCentre().getY()) < temp.getHeight()/2){
+					temp.takeDamage(bullet.getDamage());
+					if(temp.getHealth() <= 0) {
+						EnemiesList.remove(temp);
+						gameManager.changeCoins(1);
+					}
+					BulletList.remove(bullet);
+
+
 				}
 			}
 		}
@@ -133,14 +139,19 @@ public class Model {
 		if(nodeX >= nodes.length || nodeY >= nodes[0].length) return;
 
 		Node node = currentMap.getNodes()[nodeY][nodeX];
-		if(node.isAvailable()){
+		if(node.isAvailable() ){
 			Point3f turretLocation = new Point3f(node.getPosition().getX()+(currentMap.getNodeWidth()/2)-25, node.getPosition().getY()+(currentMap.getNodeHeight()/2)-25, 0);
-			Bullet turretBullet = new Bullet("res/Bullet.png",10,10, new Point3f(turretLocation.getX(), turretLocation.getY(),0));
-			Turret turret = new Turret("res/Lightning.png",50,50, turretLocation, "Standard", 1,1,200, turretBullet);
+			Bullet turretBullet = new Bullet("res/Bullet.png",10,10, new Point3f(turretLocation.getX(), turretLocation.getY(),0), 20);
+			Turret turret = new Turret("res/Lightning.png",50,50, turretLocation, "Standard", 1 ,1,200, turretBullet);
+			if(gameManager.getCoins() >= turret.getCost()){
+				gameManager.changeCoins(-turret.getCost());
+				currentMap.useNode(nodeY,nodeX);
+				node.setTurret(turret);
+				towers.add(turret);
+			}else{
+				System.out.println("NOT ENOUGH COINS");
+			}
 
-			currentMap.useNode(nodeY,nodeX);
-			node.setTurret(turret);
-			towers.add(turret);
 		}else{
 			System.out.println("CANNOT PLACE HERE!");
 		}
@@ -149,7 +160,7 @@ public class Model {
 	public void spawn(){
 		Enemy enemy = new Enemy("res/UFO.png",50,50,
 				new Point3f(currentMap.getEnemyPath().get(0).getPosition().getX(),
-						currentMap.getEnemyPath().get(0).getPosition().getY(),0), 1);
+						currentMap.getEnemyPath().get(0).getPosition().getY(),0), 100);
 		EnemiesList.add(enemy);
 	}
 
@@ -157,10 +168,10 @@ public class Model {
 		for(Turret turret : towers){
 			turret.setTarget(null);
 			for(Enemy enemy : EnemiesList){
-				if(enemy.getCentre().getX() >= turret.getCentre().getX()-turret.getRange() &&
-						enemy.getCentre().getX() <= turret.getCentre().getX()+turret.getRange() &&
-						enemy.getCentre().getY() >= turret.getCentre().getY()-turret.getRange() &&
-						enemy.getCentre().getY() <= turret.getCentre().getY()+turret.getRange()){
+				if(enemy.getCentre().getX() >= turret.getCentre().getX()-turret.getRange()/2 &&
+						enemy.getCentre().getX() <= turret.getCentre().getX()+turret.getRange()/2 &&
+						enemy.getCentre().getY() >= turret.getCentre().getY()-turret.getRange()/2 &&
+						enemy.getCentre().getY() <= turret.getCentre().getY()+turret.getRange()/2){
 					turret.setTarget(enemy);
 					break;
 				}
