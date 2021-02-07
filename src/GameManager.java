@@ -1,7 +1,12 @@
+import GameObjects.Turret;
+import util.GameObject;
+
 public class GameManager {
     private static final GameManager gameManager = new GameManager();
 
     private int coins;
+
+    private Turret selected;
 
     public GameManager(){
         this.coins = 10;
@@ -21,5 +26,17 @@ public class GameManager {
 
     public void setCoins(int coins) {
         this.coins = coins;
+    }
+
+    public static GameManager getGameManager() {
+        return gameManager;
+    }
+
+    public Turret getSelected() {
+        return selected;
+    }
+
+    public void setSelected(Turret selected) {
+        this.selected = selected;
     }
 }

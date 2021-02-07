@@ -77,8 +77,6 @@ public class Model {
 						gameManager.changeCoins(1);
 					}
 					BulletList.remove(bullet);
-
-
 				}
 			}
 		}
@@ -122,30 +120,39 @@ public class Model {
 	private void playerLogic() {
 		// smoother animation is possible if we make a target position  // done but may try to change things for students
 		//check for movement and if you fired a bullet
+
+
+
 		if(Controller.isMouseClicked()) {
-			createTower();
+			float x = controller.getMouseClickPosition().getX();
+			float y = controller.getMouseClickPosition().getY();
+
+			int nodeX = (int) (x/currentMap.getNodeWidth());
+			int nodeY = (int) (y/currentMap.getNodeHeight());
+			Node[][] nodes = currentMap.getNodes();
+
+			if(nodeX >= nodes.length || nodeY >= nodes[0].length) return;
+
+			Node node = currentMap.getNodes()[nodeY][nodeX];
+			if(node.isAvailable()) createTower(node);
+			else gameManager.setSelected(node.getTurret());
 			Controller.getInstance().setMouseClicked(false);
 		}
 	}
 
-	private void createTower(){
-		float x = controller.getMouseClickPosition().getX();
-		float y = controller.getMouseClickPosition().getY();
+	private void selectTurert(){
 
-		int nodeX = (int) (x/currentMap.getNodeWidth());
-		int nodeY = (int) (y/currentMap.getNodeHeight());
-		Node[][] nodes = currentMap.getNodes();
+	}
 
-		if(nodeX >= nodes.length || nodeY >= nodes[0].length) return;
+	private void createTower(Node node){
 
-		Node node = currentMap.getNodes()[nodeY][nodeX];
 		if(node.isAvailable() ){
 			Point3f turretLocation = new Point3f(node.getPosition().getX()+(currentMap.getNodeWidth()/2)-25, node.getPosition().getY()+(currentMap.getNodeHeight()/2)-25, 0);
 			Bullet turretBullet = new Bullet("res/Bullet.png",10,10, new Point3f(turretLocation.getX(), turretLocation.getY(),0), 20);
 			Turret turret = new Turret("res/Lightning.png",50,50, turretLocation, "Standard", 1 ,1,200, turretBullet);
 			if(gameManager.getCoins() >= turret.getCost()){
 				gameManager.changeCoins(-turret.getCost());
-				currentMap.useNode(nodeY,nodeX);
+				node.setAvailable(false);
 				node.setTurret(turret);
 				towers.add(turret);
 			}else{

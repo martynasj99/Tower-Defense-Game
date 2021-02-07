@@ -3,6 +3,8 @@ package GameObjects;
 import util.GameObject;
 import util.Point3f;
 
+import java.util.concurrent.TimeUnit;
+
 public class Turret extends GameObject {
 
     private String type;
@@ -26,6 +28,14 @@ public class Turret extends GameObject {
         this.range = range;
         this.bullet = bullet;
         this.target = null;
+    }
+
+    public void upgradeTurret(){
+        this.level++;
+        this.range +=10;
+        this.bullet.setDamage(getBullet().getDamage()+10);
+        this.cost *= this.cost+5;
+        this.speed+=.1;
     }
 
     public String getType() {
