@@ -51,12 +51,7 @@ public class Model {
 	private Map currentMap;
 
 	public Model() {
-		currentMap =  mapManager.getMaps().get(mapManager.getCurrentMap());
-
-		EnemiesList.add(new Enemy("res/UFO.png",50,50,
-				new Point3f(currentMap.getEnemyPath().get(0).getPosition().getX(),
-						currentMap.getEnemyPath().get(0).getPosition().getY(),0), 1));
-
+		currentMap = mapManager.getCurrentMap();
 	}
 
 	public void gamelogic() {
@@ -120,10 +115,8 @@ public class Model {
 	private void playerLogic() {
 		// smoother animation is possible if we make a target position  // done but may try to change things for students
 		//check for movement and if you fired a bullet
-
-
-
 		if(Controller.isMouseClicked()) {
+			Controller.getInstance().setMouseClicked(false);
 			float x = controller.getMouseClickPosition().getX();
 			float y = controller.getMouseClickPosition().getY();
 
@@ -136,20 +129,15 @@ public class Model {
 			Node node = currentMap.getNodes()[nodeY][nodeX];
 			if(node.isAvailable()) createTower(node);
 			else gameManager.setSelected(node.getTurret());
-			Controller.getInstance().setMouseClicked(false);
+
 		}
 	}
 
-	private void selectTurert(){
-
-	}
-
 	private void createTower(Node node){
-
 		if(node.isAvailable() ){
 			Point3f turretLocation = new Point3f(node.getPosition().getX()+(currentMap.getNodeWidth()/2)-25, node.getPosition().getY()+(currentMap.getNodeHeight()/2)-25, 0);
 			Bullet turretBullet = new Bullet("res/Bullet.png",10,10, new Point3f(turretLocation.getX(), turretLocation.getY(),0), 20);
-			Turret turret = new Turret("res/Lightning.png",50,50, turretLocation, "Standard", 1 ,1,200, turretBullet);
+			Turret turret = new Turret("res/Lightning.png",50,50, turretLocation, "Standard", 1 ,10,200, turretBullet);
 			if(gameManager.getCoins() >= turret.getCost()){
 				gameManager.changeCoins(-turret.getCost());
 				node.setAvailable(false);
@@ -165,14 +153,12 @@ public class Model {
 	}
 
 	public void spawn(){
-		Enemy enemy = new Enemy("res/UFO.png",50,50,
-				new Point3f(currentMap.getEnemyPath().get(0).getPosition().getX(),
-						currentMap.getEnemyPath().get(0).getPosition().getY(),0), 100);
-		EnemiesList.add(enemy);
+		EnemiesList.add(new Enemy("res/UFO.png",50,50, new Point3f(currentMap.getEnemyPath().get(0).getPosition().getX(), currentMap.getEnemyPath().get(0).getPosition().getY(),0), 1,100,1));
 	}
 
-	public void fire(){
+	public void fire(int step){
 		for(Turret turret : towers){
+			if(step % turret.getSpeed() != 0) continue;
 			turret.setTarget(null);
 			for(Enemy enemy : EnemiesList){
 				if(enemy.getCentre().getX() >= turret.getCentre().getX()-turret.getRange()/2 &&
@@ -200,9 +186,6 @@ public class Model {
 			bullet.setCentre(new Point3f(turret.getCentre().getX(), turret.getCentre().getY(), 0));
 			BulletList.add(bullet);
 		}
-	}
-
-	public void getTargets(){
 	}
 
 	public CopyOnWriteArrayList<Enemy> getEnemies() {

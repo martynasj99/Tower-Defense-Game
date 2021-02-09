@@ -10,7 +10,7 @@ public class MapManager {
     private List<Map> maps;
     private int screenWidth;
     private int screenHeight;
-    private int currentMap;
+    private Map currentMap;
 
     public MapManager(int screenHeight, int screenWidth) {
         this.maps = new ArrayList<>();
@@ -35,6 +35,7 @@ public class MapManager {
                 {0,0,1,0,0,0,0,0,0,0},
                 {0,0,1,0,0,0,0,0,0,0},
                 {0,0,1,0,0,0,0,0,0,0}}));
+        setCurrentMap(0);
     }
 
     public void addMap(Map map){
@@ -49,12 +50,12 @@ public class MapManager {
         this.maps = maps;
     }
 
-    public int getCurrentMap() {
+    public Map getCurrentMap() {
         return currentMap;
     }
 
     public void setCurrentMap(int currentMap) {
-        this.currentMap = currentMap;
+        this.currentMap = maps.get(currentMap);
     }
 
     public int getScreenWidth() {

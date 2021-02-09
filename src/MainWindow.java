@@ -56,9 +56,10 @@ public class MainWindow {
 	 private static JLabel selectedTurretText;
 	 private static JButton upgradeButton;
 
+	 private static int step;
+
 	public MainWindow() {
-
-
+		step = 0;
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 		frame.setSize(mapManager.getScreenWidth()+200, mapManager.getScreenHeight());  // you can customise this later and adapt it to change on size.
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); //If exit // you can modify with your way of quitting , just is a template.
@@ -89,8 +90,8 @@ public class MainWindow {
 
 		upgradeButton.addActionListener(e ->{
 			if(gameManager.getCoins() >= gameManager.getSelected().getCost()) {
-				gameManager.getSelected().upgradeTurret();
 				gameManager.changeCoins(-gameManager.getSelected().getCost());
+				gameManager.getSelected().upgradeTurret();
 			}
 			else
 				System.out.println("NOT ENOUGH COINS FOR UPGRADE!!!");
@@ -138,6 +139,7 @@ public class MainWindow {
 			@Override
 			public void run() {
 				gameworld.spawn();
+
 			}
 		};
 		Timer timer = new Timer("spawner");
@@ -148,11 +150,12 @@ public class MainWindow {
 		TimerTask task = new TimerTask() {
 			@Override
 			public void run() {
-				gameworld.fire();
+				gameworld.fire(step);
+				step++;
 			}
 		};
 		Timer timer = new Timer("spawner");
-		timer.scheduleAtFixedRate(task, 0L, 2000L);
+		timer.scheduleAtFixedRate(task, 0L, 100L);
 	}
 
 	private static void gameloop() {
@@ -170,7 +173,6 @@ public class MainWindow {
 			upgradeButton.setVisible(true);
 
 		}
-
 	}
 
 	private void setUpBackground(){
@@ -185,9 +187,4 @@ public class MainWindow {
 		}
 	}
 
-
-
-	private void infoPanel(){
-
-	}
 }

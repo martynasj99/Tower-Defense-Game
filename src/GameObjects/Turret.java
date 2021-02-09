@@ -35,7 +35,7 @@ public class Turret extends GameObject {
         this.range +=10;
         this.bullet.setDamage(getBullet().getDamage()+10);
         this.cost *= this.cost+5;
-        this.speed+=.1;
+        this.speed-=2;
     }
 
     public String getType() {
