@@ -1,7 +1,4 @@
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Queue;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import GameObjects.Bullet;
@@ -39,16 +36,20 @@ SOFTWARE.
  */ 
 public class Model {
 
+	private static int step = 0;
+
 	private Controller controller = Controller.getInstance();
 	private MapManager mapManager = MapManager.getInstance();
 	private GameManager gameManager = GameManager.getInstance();
 
 	private  CopyOnWriteArrayList<Enemy> EnemiesList  = new CopyOnWriteArrayList<>();
 	private  CopyOnWriteArrayList<Bullet> BulletList  = new CopyOnWriteArrayList<>();
-	private  CopyOnWriteArrayList<Turret> towers  = new CopyOnWriteArrayList<>();
+	private  CopyOnWriteArrayList<Turret> turretList  = new CopyOnWriteArrayList<>();
 
 	private int Score=0;
 	private Map currentMap;
+
+	private TimerTask spawner;
 
 	public Model() {
 		currentMap = mapManager.getCurrentMap();
@@ -69,7 +70,7 @@ public class Model {
 					temp.takeDamage(bullet.getDamage());
 					if(temp.getHealth() <= 0) {
 						EnemiesList.remove(temp);
-						gameManager.changeCoins(1);
+						gameManager.changeCoins(temp.getReward());
 					}
 					BulletList.remove(bullet);
 				}
@@ -84,19 +85,19 @@ public class Model {
 			Point3f diff = new Point3f(curr.getX()-dest.getX(), curr.getY()-dest.getY(), 0);
 			Vector3f direction;
 
-			if(diff.getX() == 0 && diff.getY() == 0) {
+			if(Math.abs(diff.getX()) <= 1 && Math.abs(diff.getY())  <= 1) {
 				temp.setProgress(temp.getProgress() + 1);
 				direction = new Vector3f(0,0,0);
 			}
-			else if(diff.getX() == 0.0)
-				direction = new Vector3f(0, diff.getY() < 0 ? -1 : 1, 0);
+			else if(Math.abs(diff.getX()) <= 1)
+				direction = new Vector3f(0, (diff.getY() < 0 ? -1 : 1)*temp.getSpeed(), 0);
 			else
-				direction = new Vector3f(diff.getX() < 0 ? 1 : -1, 0, 0 );
+				direction = new Vector3f((diff.getX() < 0 ? 1 : -1 )*temp.getSpeed(), 0, 0 );
 
 			temp.getCentre().ApplyVector(direction);
 			if (temp.getProgress() == currentMap.getEnemyPath().size()-1){
 				EnemiesList.remove(temp);
-				Score--;
+				gameManager.setLives(gameManager.getLives()-1);
 			} 
 		}
 	}
@@ -128,7 +129,7 @@ public class Model {
 
 			Node node = currentMap.getNodes()[nodeY][nodeX];
 			if(node.isAvailable()) createTower(node);
-			else gameManager.setSelected(node.getTurret());
+			else if (node.getTurret() != null) gameManager.setSelected(node);
 
 		}
 	}
@@ -142,22 +143,19 @@ public class Model {
 				gameManager.changeCoins(-turret.getCost());
 				node.setAvailable(false);
 				node.setTurret(turret);
-				towers.add(turret);
-			}else{
-				System.out.println("NOT ENOUGH COINS");
-			}
-
-		}else{
-			System.out.println("CANNOT PLACE HERE!");
-		}
+				turretList.add(turret);
+			}else System.out.println("NOT ENOUGH COINS");
+		}else System.out.println("CANNOT PLACE HERE!");
 	}
 
-	public void spawn(){
-		EnemiesList.add(new Enemy("res/UFO.png",50,50, new Point3f(currentMap.getEnemyPath().get(0).getPosition().getX(), currentMap.getEnemyPath().get(0).getPosition().getY(),0), 1,100,1));
+	private void spawn(){
+		Enemy e = gameManager.getNextEnemy();
+		if(e == null) spawner.cancel();
+		else EnemiesList.add(e);
 	}
 
-	public void fire(int step){
-		for(Turret turret : towers){
+	private void fire(int step){
+		for(Turret turret : turretList){
 			if(step % turret.getSpeed() != 0) continue;
 			turret.setTarget(null);
 			for(Enemy enemy : EnemiesList){
@@ -188,6 +186,41 @@ public class Model {
 		}
 	}
 
+	public void deleteTurret(){
+		Turret turret = gameManager.getSelected().getTurret();
+		turretList.remove(turret);
+		gameManager.changeCoins(turret.getSellCost());
+		gameManager.getSelected().setTurret(null);
+		gameManager.getSelected().setAvailable(true);
+		gameManager.setSelected(null);
+	}
+
+	public void startWave(){
+		gameManager.setRound(gameManager.getRound()+1);
+		gameManager.generateWave(gameManager.getRound());
+
+		spawner = new TimerTask() {
+			@Override
+			public void run() {
+				spawn();
+			}
+		};
+		Timer timer = new Timer("spawner");
+		timer.scheduleAtFixedRate(spawner, 2000L, 500L);
+	}
+
+	public void scheduleFire(){
+		TimerTask task = new TimerTask() {
+			@Override
+			public void run() {
+				fire(step);
+				step++;
+			}
+		};
+		Timer timer = new Timer("spawner");
+		timer.scheduleAtFixedRate(task, 0L, 100L);
+	}
+
 	public CopyOnWriteArrayList<Enemy> getEnemies() {
 		return EnemiesList;
 	}
@@ -196,8 +229,8 @@ public class Model {
 		return BulletList;
 	}
 
-	public CopyOnWriteArrayList<Turret> getTowers() {
-		return towers;
+	public CopyOnWriteArrayList<Turret> getTurrets() {
+		return turretList;
 	}
 
 	public int getScore() {

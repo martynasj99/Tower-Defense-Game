@@ -5,6 +5,8 @@ import java.awt.Image;
 import java.awt.LayoutManager;
 import java.awt.Rectangle;
 import java.awt.TexturePaint;
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -53,6 +55,8 @@ public class Viewer extends JPanel {
 	private Model gameworld =new Model();
 	private MapManager mapManager = MapManager.getInstance();
 	private Controller controller = Controller.getInstance();
+	private GameManager gameManager = GameManager.getInstance();
+
 	 
 	public Viewer(Model World) {
 		this.gameworld=World;
@@ -78,24 +82,28 @@ public class Viewer extends JPanel {
 		super.paintComponent(g);
 		CurrentAnimationTime++; // runs animation time step
 		drawBackground(g);
-		gameworld.getTowers().forEach((temp) -> drawPlayer(temp, g));
+		gameworld.getTurrets().forEach((temp) -> drawPlayer(temp, g));
 		gameworld.getBullets().forEach((temp) -> drawBullet((int) temp.getCentre().getX(), (int) temp.getCentre().getY(), (int) temp.getWidth(), (int) temp.getHeight(), temp.getTexture(), g));
 		gameworld.getEnemies().forEach((temp) -> drawEnemies(temp,g));
+
+		markSelected(g);
 	}
-	
+
+
+	//https://gamesupply.itch.io/virus-free-mini-pack
 	private void drawEnemies(Enemy enemy, Graphics g) {
 		String texture = enemy.getTexture();
 		int x = (int) enemy.getCentre().getX();
 		int y = (int) enemy.getCentre().getY();
 		int width = enemy.getWidth();
 		int height = enemy.getHeight();
-		float healthRemainingPerc = (float) enemy.getHealth()/100;
+		float healthRemainingPerc = (float) enemy.getHealth()/enemy.getInitialHealth();
 		File TextureToLoad = new File(texture);
 		try {
 			Image myImage = ImageIO.read(TextureToLoad);
 			//The spirte is 32x32 pixel wide and 4 of them are placed together so we need to grab a different one each time 
 			//remember your training :-) computer science everything starts at 0 so 32 pixels gets us to 31  
-			int currentPositionInAnimation= ((int) (CurrentAnimationTime%4 )*32); //slows down animation so every 10 frames we get another frame so every 100ms
+			//int currentPositionInAnimation= ((int) (CurrentAnimationTime%4 )*32); //slows down animation so every 10 frames we get another frame so every 100ms
 
 			if(healthRemainingPerc > .66) g.setColor(Color.GREEN);
 			else if(healthRemainingPerc >= .33 && healthRemainingPerc <= .66) g.setColor(Color.ORANGE);
@@ -103,8 +111,8 @@ public class Viewer extends JPanel {
 
 			g.drawRect(x,y, width, height/8);
 			g.fillRect(x,y, (int)(width*healthRemainingPerc), height/8);
-			g.drawImage(myImage, x,y, x+width, y+height, currentPositionInAnimation  , 0, currentPositionInAnimation+31, 32, null); 
-			
+			//g.drawImage(myImage, x,y, x+width, y+height, currentPositionInAnimation  , 0, currentPositionInAnimation+31, 32, null);
+			g.drawImage(myImage, x,y, width, height, null);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -132,6 +140,8 @@ public class Viewer extends JPanel {
 	}
 
 	private void drawPlayer(Turret player, Graphics g) {
+	    Graphics2D g2d = (Graphics2D) g;
+
 		String texture = player.getTexture();
 		int x = (int) player.getCentre().getX();
 		int y = (int) player.getCentre().getY();
@@ -141,11 +151,22 @@ public class Viewer extends JPanel {
 
 		File TextureToLoad = new File(texture);
 		try {
-			Image myImage = ImageIO.read(TextureToLoad);
+			BufferedImage myImage = ImageIO.read(TextureToLoad);
 			//The spirte is 32x32 pixel wide and 4 of them are placed together so we need to grab a different one each time 
 			//remember your training :-) computer science everything starts at 0 so 32 pixels gets us to 31  
-			int currentPositionInAnimation= ((int) ((CurrentAnimationTime%40)/10))*32; //slows down animation so every 10 frames we get another frame so every 100ms 
-			g.drawImage(myImage, x,y, x+width, y+height, currentPositionInAnimation  , 0, currentPositionInAnimation+31, 32, null);
+			int currentPositionInAnimation= ((int) ((CurrentAnimationTime%40)/10))*32; //slows down animation so every 10 frames we get another frame so every 100ms
+
+            double angle = 0;
+
+            if(player.getTarget() != null)
+                //https://stackoverflow.com/questions/2676719/calculating-the-angle-between-the-line-defined-by-two-points
+                angle = Math.atan2(player.getTarget().getCentre().getY() - player.getCentre().getY(), player.getTarget().getCentre().getX() - player.getCentre().getX()) * 180 / Math.PI;
+
+            //Reference : https://gist.github.com/sye8/edba2dfda1645b37bfcf5b9bd9ce3a75 (Some parts)
+            g2d.rotate(Math.toRadians(-1*angle), x+(double)(width/2),y+(double)(height/2));
+			g2d.drawImage(myImage, x,y, x+width, y+height, 0,0,32,31, null);
+			g2d.rotate(Math.toRadians(angle),  x+(double)(width/2),y+(double)(height/2));
+
 			if(controller.getMouseMovePosition().getX() >= x &&
 					controller.getMouseMovePosition().getX() <= x+width &&
 					controller.getMouseMovePosition().getY() >= y  &&
@@ -157,9 +178,19 @@ public class Viewer extends JPanel {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+
+
 		//g.drawImage(img, dx1, dy1, dx2, dy2, sx1, sy1, sx2, sy2, observer));
 		//Lighnting Png from https://opengameart.org/content/animated-spaceships  its 32x32 thats why I know to increament by 32 each time 
 		// Bullets from https://opengameart.org/forumtopic/tatermands-art 
 		// background image from https://www.needpix.com/photo/download/677346/space-stars-nebula-background-galaxy-universe-free-pictures-free-photos-free-images
 	}
+    private void markSelected(Graphics g){
+	    Node selected = gameManager.getSelected();
+	    if(selected != null){
+            g.setColor(Color.BLUE);
+            g.drawArc((int) selected.getPosition().getX(), (int)selected.getPosition().getY(), (int) selected.getWidth(), (int) selected.getHeight(), 0, 360);
+        }
+
+    }
 }

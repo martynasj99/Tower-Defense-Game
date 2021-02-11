@@ -1,14 +1,9 @@
 import java.awt.*;
-import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.Timer;
-import java.util.TimerTask;
-
 import javax.imageio.ImageIO;
 import javax.swing.*;
-
 import GameObjects.Turret;
 import map.MapManager;
 import util.UnitTests;
@@ -50,17 +45,17 @@ public class MainWindow {
 	 private static boolean startGame= false;
 
 	 private JLabel backgroundImageForStartMenu;
-	 private static JLabel coins;
+	 private static JLabel infoText;
 
 	 private static JPanel selectedPanel;
 	 private static JLabel selectedTurretText;
 	 private static JButton upgradeButton;
-
+	 private static JButton deleteButton;
+	 private static JButton nextWave;
 	 private static int step;
 
 	public MainWindow() {
 		step = 0;
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 		frame.setSize(mapManager.getScreenWidth()+200, mapManager.getScreenHeight());  // you can customise this later and adapt it to change on size.
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); //If exit // you can modify with your way of quitting , just is a template.
 		frame.setLayout(null);
@@ -69,49 +64,12 @@ public class MainWindow {
 		canvas.setBackground(new Color(255,255,255)); //white background  replaced by Space background but if you remove the background method this will draw a white screen
 		canvas.setVisible(false); // this will become visible after you press the key.
 
-		JButton startMenuButton = new JButton("Start Game");
-        startMenuButton.setBounds(400, 500, 200, 40);
-		startMenuButton.setVisible(true);
 
-		coins = new JLabel("COINS");
-		frame.add(coins);
-		coins.setBounds(mapManager.getScreenWidth(),0,200,50);
-		coins.setVisible(false);
+		setUpInfoText();
+		setUpSelectedPanel();
+		setUpNextWaveButton();
+		setUpStartMenu();
 
-		selectedPanel = new JPanel();
-		selectedTurretText = new JLabel();
-		upgradeButton = new JButton("Upgrade");
-		selectedPanel.add(selectedTurretText);
-		selectedPanel.add(upgradeButton);
-		frame.add(selectedPanel);
-		selectedPanel.setBounds(mapManager.getScreenWidth(), mapManager.getScreenHeight()/2,200, mapManager.getScreenHeight()/2);
-		upgradeButton.setVisible(false);
-		selectedPanel.setVisible(false);
-
-		upgradeButton.addActionListener(e ->{
-			if(gameManager.getCoins() >= gameManager.getSelected().getCost()) {
-				gameManager.changeCoins(-gameManager.getSelected().getCost());
-				gameManager.getSelected().upgradeTurret();
-			}
-			else
-				System.out.println("NOT ENOUGH COINS FOR UPGRADE!!!");
-		});
-
-		startMenuButton.addActionListener(e -> {
-			startMenuButton.setVisible(false);
-//			backgroundImageForStartMenu.setVisible(false);
-			canvas.setVisible(true);
-			coins.setVisible(true);
-			selectedPanel.setVisible(true);
-			canvas.addMouseListener(controller);
-			canvas.addMouseMotionListener(controller);
-			canvas.requestFocusInWindow(); // making sure that the Canvas is in focus so keyboard input will be taking in .
-			startGame=true;
-			scheduleSpawn();
-			scheduleFire();
-		});
-
-		frame.add(startMenuButton);
 		frame.setVisible(true);
 	}
 
@@ -131,48 +89,97 @@ public class MainWindow {
 				UnitTests.CheckFrameRate(System.currentTimeMillis(),FrameCheck, TargetFPS);
 			}
 		});
-
 		game.run();
-	}
-	private void scheduleSpawn(){
-		TimerTask task = new TimerTask() {
-			@Override
-			public void run() {
-				gameworld.spawn();
-
-			}
-		};
-		Timer timer = new Timer("spawner");
-		timer.scheduleAtFixedRate(task, 2000L, 500L);
-	}
-
-	private void scheduleFire(){
-		TimerTask task = new TimerTask() {
-			@Override
-			public void run() {
-				gameworld.fire(step);
-				step++;
-			}
-		};
-		Timer timer = new Timer("spawner");
-		timer.scheduleAtFixedRate(task, 0L, 100L);
 	}
 
 	private static void gameloop() {
 		//TODO Set up as thread.
 		canvas.updateview();
 		gameworld.gamelogic();
-		coins.setText("Coins: " + gameManager.getCoins());
-		frame.setTitle("Score =  "+ gameworld.getScore());
+		infoText.setText("<html>Coins: " + gameManager.getCoins() +
+				"<br/>Round: " + gameManager.getRound() +
+				"<br/>Lives: " + gameManager.getLives() + "</html>");
 		if(gameManager.getSelected() != null) {
-			Turret selectedTurret = gameManager.getSelected();
+			Turret selectedTurret = gameManager.getSelected().getTurret();
 			selectedTurretText.setText("<html>Level: " + selectedTurret.getLevel() +
 					"<br/>Range: " + selectedTurret.getRange() +
 					"<br/>Damage: " + selectedTurret.getBullet().getDamage() +
-					"<br/>Cost: " + selectedTurret.getCost());
+					"<br/>Rate: " + selectedTurret.getSpeed() +
+					"<br/>Cost: " + selectedTurret.getCost() + "</html>");
+			deleteButton.setText("Sell ("+gameManager.getSelected().getTurret().getSellCost()+")");
 			upgradeButton.setVisible(true);
-
+			deleteButton.setVisible(true);
+			selectedPanel.setVisible(true);
+			if(gameManager.getLives() == 0){
+				//TODO END GAME
+			}
+			//if(gameManager.getNextEnemy() == null) nextWave.setVisible(true);
 		}
+	}
+
+
+	private void setUpInfoText(){
+		infoText = new JLabel();
+		frame.add(infoText);
+		infoText.setBounds(mapManager.getScreenWidth(),0,200,50);
+		infoText.setVisible(false);
+	}
+
+	private void setUpSelectedPanel(){
+		selectedPanel = new JPanel();
+		selectedTurretText = new JLabel();
+		upgradeButton = new JButton("Upgrade");
+		deleteButton = new JButton("Sell");
+		selectedPanel.add(selectedTurretText);
+		selectedPanel.add(upgradeButton);
+		selectedPanel.add(deleteButton);
+		frame.add(selectedPanel);
+		selectedPanel.setBounds(mapManager.getScreenWidth(), mapManager.getScreenHeight()/2,200, mapManager.getScreenHeight()/2);
+		upgradeButton.setVisible(false);
+		deleteButton.setVisible(false);
+		selectedPanel.setVisible(false);
+
+		upgradeButton.addActionListener(e ->{
+			if(gameManager.getCoins() >= gameManager.getSelected().getTurret().getCost()) {
+				gameManager.changeCoins(-gameManager.getSelected().getTurret().getCost());
+				gameManager.getSelected().getTurret().upgradeTurret();
+			}
+			else System.out.println("NOT ENOUGH COINS FOR UPGRADE!!!");
+		});
+
+		deleteButton.addActionListener(e ->{
+			gameworld.deleteTurret();
+			upgradeButton.setVisible(false);
+			deleteButton.setVisible(false);
+			selectedPanel.setVisible(false);
+		});
+	}
+
+	private void setUpNextWaveButton(){
+		nextWave = new JButton("Next Wave");
+		frame.add(nextWave);
+		nextWave.setBounds(mapManager.getScreenWidth(), mapManager.getScreenHeight()-50, 100, 50);
+		nextWave.setVisible(true);
+		nextWave.addActionListener(e -> gameworld.startWave());
+	}
+
+	private void setUpStartMenu(){
+		JButton startMenuButton = new JButton("Start Game");
+		startMenuButton.setBounds(400, 500, 200, 40);
+		startMenuButton.setVisible(true);
+
+		startMenuButton.addActionListener(e -> {
+			startMenuButton.setVisible(false);
+			canvas.setVisible(true);
+			infoText.setVisible(true);
+			canvas.addMouseListener(controller);
+			canvas.addMouseMotionListener(controller);
+			canvas.requestFocusInWindow(); // making sure that the Canvas is in focus so keyboard input will be taking in .
+			startGame=true;
+			gameworld.startWave();
+			gameworld.scheduleFire();
+		});
+		frame.add(startMenuButton);
 	}
 
 	private void setUpBackground(){
@@ -186,5 +193,4 @@ public class MainWindow {
 			e.printStackTrace();
 		}
 	}
-
 }

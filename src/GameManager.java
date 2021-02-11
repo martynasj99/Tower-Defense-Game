@@ -1,12 +1,14 @@
 import GameObjects.Enemy;
-import GameObjects.Turret;
 import map.Map;
 import map.MapManager;
-import util.GameObject;
+import map.Node;
 import util.Point3f;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.LinkedBlockingDeque;
 
 public class GameManager {
     private static final GameManager gameManager = new GameManager();
@@ -15,15 +17,19 @@ public class GameManager {
 
     private  List<Enemy> enemyTypes;
 
-    private int wave;
+    private int round;
     private int coins;
-    private Turret selected;
+    private int lives;
+    private Node selected;
 
+    private Queue<Enemy> enemiesToSpawn = new LinkedBlockingDeque<>();
 
     public GameManager(){
-        this.wave = 0;
+        this.round = 0;
         this.coins = 10;
+        this.lives = 10;
         initializeEnemies();
+        generateWave(this.round);
     }
 
     public static GameManager getInstance(){
@@ -33,13 +39,36 @@ public class GameManager {
     public void initializeEnemies(){
         Map currentMap =  mapManager.getCurrentMap();
         enemyTypes = new ArrayList<>();
-        enemyTypes.add(new Enemy("res/UFO.png",50,50, new Point3f(currentMap.getEnemyPath().get(0).getPosition().getX(), currentMap.getEnemyPath().get(0).getPosition().getY(),0), 1,100,1));
-
+        enemyTypes.add(new Enemy("res/virus/virus_0.png",50,50, new Point3f(currentMap.getEnemyPath().get(0).getPosition().getX(), currentMap.getEnemyPath().get(0).getPosition().getY(),0), 1,100,this.round+1,1));
+        enemyTypes.add(new Enemy("res/virus/virus_1.png",50,50, new Point3f(currentMap.getEnemyPath().get(0).getPosition().getX(), currentMap.getEnemyPath().get(0).getPosition().getY(),0), 1,400,2*this.round+1,1.5f));
+        enemyTypes.add(new Enemy("res/virus/virus_2.png",50,50, new Point3f(currentMap.getEnemyPath().get(0).getPosition().getX(), currentMap.getEnemyPath().get(0).getPosition().getY(),0), 1,500,3*this.round+1,1));
+        enemyTypes.add(new Enemy("res/virus/virus_3.png",50,50, new Point3f(currentMap.getEnemyPath().get(0).getPosition().getX(), currentMap.getEnemyPath().get(0).getPosition().getY(),0), 1,1000, 4*this.round+1, 1));
+        enemyTypes.add(new Enemy("res/virus/virus_4.png",50,50, new Point3f(currentMap.getEnemyPath().get(0).getPosition().getX(), currentMap.getEnemyPath().get(0).getPosition().getY(),0), 1,2000,5*this.round+1, 2));
+        enemyTypes.add(new Enemy("res/virus/virus_5.png",50,50, new Point3f(currentMap.getEnemyPath().get(0).getPosition().getX(), currentMap.getEnemyPath().get(0).getPosition().getY(),0), 1,2000,6*this.round+1, 1.5f));
+        enemyTypes.add(new Enemy("res/virus/virus_6.png",50,50, new Point3f(currentMap.getEnemyPath().get(0).getPosition().getX(), currentMap.getEnemyPath().get(0).getPosition().getY(),0), 1,5000,7*this.round+1, 1));
     }
 
-    public Enemy getEnemeyClone(int ind){
-        Enemy e = getEnemyTypes().get(ind);
-        return new Enemy(e.getTexture(), e.getWidth(), e.getHeight(), e.getCentre(), e.getLevel(), e.getHealth(), e.getSpeed());
+    public void generateWave(int wave){
+        java.util.Map<Integer, Integer> spawnAmount = new HashMap<>();
+        spawnAmount.put(0, (wave*2)+2);
+        spawnAmount.put(1, wave-1 > 3 ? wave / 2 : 0);
+        spawnAmount.put(2, wave > 5 ? wave / 3 : 0);
+        spawnAmount.put(3, wave > 8 ? wave / 8 : 0);
+        spawnAmount.put(4, wave > 10 ? wave / 5 : 0);
+        spawnAmount.put(5, wave > 11 ? wave / 11 : 0);
+        spawnAmount.put(6, wave > 12 ? wave / 6 : 0);
+
+        for(java.util.Map.Entry<Integer, Integer> entry: spawnAmount.entrySet()){
+            Enemy e = enemyTypes.get(entry.getKey());
+            for(int i = 0; i < entry.getValue(); i++){
+                enemiesToSpawn.add(new Enemy(e.getTexture(),e.getWidth(),e.getHeight(), new Point3f(e.getCentre().getX(), e.getCentre().getY(),e.getCentre().getZ()), e.getLevel(),e.getHealth(),e.getReward(), e.getSpeed()));
+            }
+        }
+    }
+
+    public Enemy getNextEnemy(){
+        if(!enemiesToSpawn.isEmpty()) return enemiesToSpawn.poll();
+        return null;
     }
 
     public void changeCoins(int amt){
@@ -58,11 +87,11 @@ public class GameManager {
         return gameManager;
     }
 
-    public Turret getSelected() {
+    public Node getSelected() {
         return selected;
     }
 
-    public void setSelected(Turret selected) {
+    public void setSelected(Node selected) {
         this.selected = selected;
     }
 
@@ -74,12 +103,27 @@ public class GameManager {
         this.enemyTypes = enemyTypes;
     }
 
-    public int getWave() {
-        return wave;
+    public int getRound() {
+        return round;
     }
 
-    public void setWave(int wave) {
-        this.wave = wave;
+    public void setRound(int round) {
+        this.round = round;
     }
 
+    public int getLives() {
+        return lives;
+    }
+
+    public void setLives(int lives) {
+        this.lives = lives;
+    }
+
+    public Queue<Enemy> getEnemiesToSpawn() {
+        return enemiesToSpawn;
+    }
+
+    public void setEnemiesToSpawn(Queue<Enemy> enemiesToSpawn) {
+        this.enemiesToSpawn = enemiesToSpawn;
+    }
 }
