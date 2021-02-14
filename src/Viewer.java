@@ -124,17 +124,21 @@ public class Viewer extends JPanel {
 		for(int i = 0; i < nodes.length; i++){
 			for(int j = 0; j < nodes[0].length; j++){
 				Node node = nodes[i][j];
-				g.setColor(node.getColor());
+				if(node.isAvailable() && controller.getMouseMovePosition().getX() >= node.getPosition().getX() &&
+						controller.getMouseMovePosition().getX() <= node.getPosition().getX() +node.getWidth() &&
+						controller.getMouseMovePosition().getY() >= node.getPosition().getY()  &&
+						controller.getMouseMovePosition().getY() <= node.getPosition().getY()+node.getHeight() ){
+					g.setColor(new Color(0,194,16));
+				}else{
+					g.setColor(node.getColor());
+				}
+
 				g.fillRect((int) node.getPosition().getX(), (int) node.getPosition().getY(), (int) node.getWidth(), (int) node.getHeight());
 			}
 		}
 	}
 	
 	private void drawBullet(int x, int y, int width, int height, String texture,Graphics g){
-		File TextureToLoad = new File(texture);
-		//Image myImage = ImageIO.read(TextureToLoad);
-		//64 by 128
-		 //g.drawImage(myImage, x,y, x+width, y+height, 0 , 0, 63, 127, null);
 		g.setColor(Color.RED);
 		g.fillArc(x,y,width, height, 0, 360);
 	}
@@ -151,21 +155,22 @@ public class Viewer extends JPanel {
 
 		File TextureToLoad = new File(texture);
 		try {
+			BufferedImage base = ImageIO.read(new File("res/turrets/Tower.png"));
 			BufferedImage myImage = ImageIO.read(TextureToLoad);
 			//The spirte is 32x32 pixel wide and 4 of them are placed together so we need to grab a different one each time 
 			//remember your training :-) computer science everything starts at 0 so 32 pixels gets us to 31  
 			int currentPositionInAnimation= ((int) ((CurrentAnimationTime%40)/10))*32; //slows down animation so every 10 frames we get another frame so every 100ms
 
             double angle = 0;
-
             if(player.getTarget() != null)
                 //https://stackoverflow.com/questions/2676719/calculating-the-angle-between-the-line-defined-by-two-points
                 angle = Math.atan2(player.getTarget().getCentre().getY() - player.getCentre().getY(), player.getTarget().getCentre().getX() - player.getCentre().getX()) * 180 / Math.PI;
 
+            g.drawImage(base, x, y, 60, 60, null); //TODO MAKE IT ADAPT TO TILE SIZE
             //Reference : https://gist.github.com/sye8/edba2dfda1645b37bfcf5b9bd9ce3a75 (Some parts)
-            g2d.rotate(Math.toRadians(-1*angle), x+(double)(width/2),y+(double)(height/2));
-			g2d.drawImage(myImage, x,y, x+width, y+height, 0,0,32,31, null);
-			g2d.rotate(Math.toRadians(angle),  x+(double)(width/2),y+(double)(height/2));
+            g2d.rotate(Math.toRadians(-1*angle), (x+10)+(double)(width/2),(y-10)+(double)(height/2));
+			g2d.drawImage(myImage, x+10,y-25, width, height, null);
+			g2d.rotate(Math.toRadians(angle),  (x+10)+(double)(width/2),(y-10)+(double)(height/2));
 
 			if(controller.getMouseMovePosition().getX() >= x &&
 					controller.getMouseMovePosition().getX() <= x+width &&
@@ -179,7 +184,6 @@ public class Viewer extends JPanel {
 			e.printStackTrace();
 		}
 
-
 		//g.drawImage(img, dx1, dy1, dx2, dy2, sx1, sy1, sx2, sy2, observer));
 		//Lighnting Png from https://opengameart.org/content/animated-spaceships  its 32x32 thats why I know to increament by 32 each time 
 		// Bullets from https://opengameart.org/forumtopic/tatermands-art 
@@ -191,6 +195,5 @@ public class Viewer extends JPanel {
             g.setColor(Color.BLUE);
             g.drawArc((int) selected.getPosition().getX(), (int)selected.getPosition().getY(), (int) selected.getWidth(), (int) selected.getHeight(), 0, 360);
         }
-
     }
 }

@@ -1,4 +1,6 @@
+import GameObjects.Bullet;
 import GameObjects.Enemy;
+import GameObjects.Turret;
 import map.Map;
 import map.MapManager;
 import map.Node;
@@ -15,12 +17,14 @@ public class GameManager {
 
     private  MapManager mapManager = MapManager.getInstance();
 
-    private  List<Enemy> enemyTypes;
+    private List<Enemy> enemyTypes;
+    private List<Turret> turretTypes;
 
     private int round;
     private int coins;
     private int lives;
     private Node selected;
+    private Turret selectedTurret;
 
     private Queue<Enemy> enemiesToSpawn = new LinkedBlockingDeque<>();
 
@@ -28,12 +32,17 @@ public class GameManager {
         this.round = 0;
         this.coins = 10;
         this.lives = 10;
+        initializeTurrets();
         initializeEnemies();
         generateWave(this.round);
     }
 
     public static GameManager getInstance(){
         return gameManager;
+    }
+
+    public void setSelectedTurret(int ind){
+        this.selectedTurret = turretTypes.get(ind);
     }
 
     public void initializeEnemies(){
@@ -46,6 +55,16 @@ public class GameManager {
         enemyTypes.add(new Enemy("res/virus/virus_4.png",50,50, new Point3f(currentMap.getEnemyPath().get(0).getPosition().getX(), currentMap.getEnemyPath().get(0).getPosition().getY(),0), 1,2000,5*this.round+1, 2));
         enemyTypes.add(new Enemy("res/virus/virus_5.png",50,50, new Point3f(currentMap.getEnemyPath().get(0).getPosition().getX(), currentMap.getEnemyPath().get(0).getPosition().getY(),0), 1,2000,6*this.round+1, 1.5f));
         enemyTypes.add(new Enemy("res/virus/virus_6.png",50,50, new Point3f(currentMap.getEnemyPath().get(0).getPosition().getX(), currentMap.getEnemyPath().get(0).getPosition().getY(),0), 1,5000,7*this.round+1, 1));
+    }
+
+    public void initializeTurrets(){
+        turretTypes = new ArrayList<>();
+        turretTypes.add(new Turret("res/turrets/Cannon.png",40,70, new Point3f(), "Cannon", 1 ,10,200,
+                new Bullet("res/Bullet.png",10,10, new Point3f(), 10)));
+        turretTypes.add(new Turret("res/turrets/MG.png",40,70, new Point3f(), "MG", 5 ,5,200,
+                new Bullet("res/Bullet.png",10,10, new Point3f(), 50)));
+        turretTypes.add(new Turret("res/turrets/Missile_Launcher.png",40,70, new Point3f(), "Missile", 10 ,20,400,
+                new Bullet("res/Bullet.png",10,10, new Point3f(), 100)));
     }
 
     public void generateWave(int wave){
@@ -125,5 +144,21 @@ public class GameManager {
 
     public void setEnemiesToSpawn(Queue<Enemy> enemiesToSpawn) {
         this.enemiesToSpawn = enemiesToSpawn;
+    }
+
+    public List<Turret> getTurretTypes() {
+        return turretTypes;
+    }
+
+    public void setTurretTypes(List<Turret> turretTypes) {
+        this.turretTypes = turretTypes;
+    }
+
+    public Turret getSelectedTurret() {
+        return selectedTurret;
+    }
+
+    public void setSelectedTurret(Turret selectedTurret) {
+        this.selectedTurret = selectedTurret;
     }
 }

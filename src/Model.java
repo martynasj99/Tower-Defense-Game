@@ -137,8 +137,9 @@ public class Model {
 	private void createTower(Node node){
 		if(node.isAvailable() ){
 			Point3f turretLocation = new Point3f(node.getPosition().getX()+(currentMap.getNodeWidth()/2)-25, node.getPosition().getY()+(currentMap.getNodeHeight()/2)-25, 0);
+			Turret t = gameManager.getSelectedTurret();
 			Bullet turretBullet = new Bullet("res/Bullet.png",10,10, new Point3f(turretLocation.getX(), turretLocation.getY(),0), 20);
-			Turret turret = new Turret("res/Lightning.png",50,50, turretLocation, "Standard", 1 ,10,200, turretBullet);
+			Turret turret = new Turret(t.getTexture(),t.getWidth(),t.getHeight(), turretLocation, t.getType(), t.getCost() ,t.getSpeed(),t.getRange(), turretBullet);
 			if(gameManager.getCoins() >= turret.getCost()){
 				gameManager.changeCoins(-turret.getCost());
 				node.setAvailable(false);

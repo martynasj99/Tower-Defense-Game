@@ -52,6 +52,8 @@ public class MainWindow {
 	 private static JButton upgradeButton;
 	 private static JButton deleteButton;
 	 private static JButton nextWave;
+	 private static JList selectTurret;
+
 	 private static int step;
 
 	public MainWindow() {
@@ -69,6 +71,7 @@ public class MainWindow {
 		setUpSelectedPanel();
 		setUpNextWaveButton();
 		setUpStartMenu();
+		setUpSelectTurrets();
 
 		frame.setVisible(true);
 	}
@@ -172,6 +175,7 @@ public class MainWindow {
 			startMenuButton.setVisible(false);
 			canvas.setVisible(true);
 			infoText.setVisible(true);
+			selectTurret.setVisible(true);
 			canvas.addMouseListener(controller);
 			canvas.addMouseMotionListener(controller);
 			canvas.requestFocusInWindow(); // making sure that the Canvas is in focus so keyboard input will be taking in .
@@ -180,6 +184,23 @@ public class MainWindow {
 			gameworld.scheduleFire();
 		});
 		frame.add(startMenuButton);
+	}
+
+	private void setUpSelectTurrets(){
+		String[] options = new String[gameManager.getTurretTypes().size()];
+		for (int i = 0; i < options.length; i++){
+			Turret turret = gameManager.getTurretTypes().get(i);
+			options[i] =  turret.getType() + " (Cost: " + turret.getCost() + ")";
+		}
+
+		selectTurret = new JList(options);
+		selectTurret.setBounds(mapManager.getScreenWidth(), 50, 200, 100);
+		selectTurret.setSelectedIndex(0);
+		gameManager.setSelectedTurret(0);
+		selectTurret.addListSelectionListener(e -> gameManager.setSelectedTurret(selectTurret.getSelectedIndex()));
+		selectTurret.setVisible(false);
+		frame.add(selectTurret);
+
 	}
 
 	private void setUpBackground(){
