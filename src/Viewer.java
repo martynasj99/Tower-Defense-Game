@@ -95,8 +95,8 @@ public class Viewer extends JPanel {
 		String texture = enemy.getTexture();
 		int x = (int) enemy.getCentre().getX();
 		int y = (int) enemy.getCentre().getY();
-		int width = enemy.getWidth();
-		int height = enemy.getHeight();
+		int width = (int) enemy.getWidth();
+		int height = (int) enemy.getHeight();
 		float healthRemainingPerc = (float) enemy.getHealth()/enemy.getInitialHealth();
 		File TextureToLoad = new File(texture);
 		try {
@@ -119,15 +119,16 @@ public class Viewer extends JPanel {
 	}
 
 	private void drawBackground(Graphics g){
-		Node[][] nodes = mapManager.getMaps().get(0).getNodes();
-		mapManager.setCurrentMap(0);
+		Node[][] nodes = mapManager.getCurrentMap().getNodes();
 		for(int i = 0; i < nodes.length; i++){
 			for(int j = 0; j < nodes[0].length; j++){
 				Node node = nodes[i][j];
-				if(node.isAvailable() && controller.getMouseMovePosition().getX() >= node.getPosition().getX() &&
-						controller.getMouseMovePosition().getX() <= node.getPosition().getX() +node.getWidth() &&
-						controller.getMouseMovePosition().getY() >= node.getPosition().getY()  &&
-						controller.getMouseMovePosition().getY() <= node.getPosition().getY()+node.getHeight() ){
+				float mouseX = controller.getMouseMovePosition().getX();
+				float mouseY = controller.getMouseMovePosition().getY();
+				if(node.isAvailable() && mouseX >= node.getPosition().getX() &&
+						mouseX <= node.getPosition().getX() +node.getWidth() &&
+						mouseY >= node.getPosition().getY()  &&
+						mouseY <= node.getPosition().getY()+node.getHeight() ){
 					g.setColor(new Color(0,194,16));
 				}else{
 					g.setColor(node.getColor());
@@ -149,28 +150,25 @@ public class Viewer extends JPanel {
 		String texture = player.getTexture();
 		int x = (int) player.getCentre().getX();
 		int y = (int) player.getCentre().getY();
-		int width = player.getWidth();
-		int height = player.getHeight();
+		int width = (int)player.getWidth();
+		int height = (int) player.getHeight();
 		int range = (int) player.getRange();
 
 		File TextureToLoad = new File(texture);
 		try {
 			BufferedImage base = ImageIO.read(new File("res/turrets/Tower.png"));
 			BufferedImage myImage = ImageIO.read(TextureToLoad);
-			//The spirte is 32x32 pixel wide and 4 of them are placed together so we need to grab a different one each time 
-			//remember your training :-) computer science everything starts at 0 so 32 pixels gets us to 31  
-			int currentPositionInAnimation= ((int) ((CurrentAnimationTime%40)/10))*32; //slows down animation so every 10 frames we get another frame so every 100ms
 
             double angle = 0;
             if(player.getTarget() != null)
                 //https://stackoverflow.com/questions/2676719/calculating-the-angle-between-the-line-defined-by-two-points
                 angle = Math.atan2(player.getTarget().getCentre().getY() - player.getCentre().getY(), player.getTarget().getCentre().getX() - player.getCentre().getX()) * 180 / Math.PI;
 
-            g.drawImage(base, x, y, 60, 60, null); //TODO MAKE IT ADAPT TO TILE SIZE
+            g.drawImage(base, x, y, mapManager.getCurrentMap().getNodeWidth()-5, mapManager.getCurrentMap().getNodeHeight(), null); //TODO MAKE IT ADAPT TO TILE SIZE
             //Reference : https://gist.github.com/sye8/edba2dfda1645b37bfcf5b9bd9ce3a75 (Some parts)
-            g2d.rotate(Math.toRadians(-1*angle), (x+10)+(double)(width/2),(y-10)+(double)(height/2));
-			g2d.drawImage(myImage, x+10,y-25, width, height, null);
-			g2d.rotate(Math.toRadians(angle),  (x+10)+(double)(width/2),(y-10)+(double)(height/2));
+            g2d.rotate(Math.toRadians(-1*angle), (x)+(mapManager.getCurrentMap().getNodeHeight()/2f) - 21+(double)(width/2),(y)+(mapManager.getCurrentMap().getNodeHeight()/2f) -50+(double)(height/2));
+			g2d.drawImage(myImage, x+(mapManager.getCurrentMap().getNodeHeight()/2) - 21,y+(mapManager.getCurrentMap().getNodeHeight()/2) -50, width, height, null);
+			g2d.rotate(Math.toRadians(angle),  (x)+(mapManager.getCurrentMap().getNodeHeight()/2f) - 21+(double)(width/2),(y)+(mapManager.getCurrentMap().getNodeHeight()/2f) -50+(double)(height/2));
 
 			if(controller.getMouseMovePosition().getX() >= x &&
 					controller.getMouseMovePosition().getX() <= x+width &&

@@ -26,8 +26,8 @@ SOFTWARE.
 public class GameObject {
 	
 	private Point3f centre= new Point3f(0,0,0);			// Centre of object, using 3D as objects may be scaled  
-	private int width=10;
-	private int height=10;
+	private float width=10;
+	private float height=10;
 	private boolean hasTextured=false;
 	private String textureLocation; 
 	private String blanktexture="res/blankSprite.png";
@@ -36,7 +36,7 @@ public class GameObject {
 		
 	}
 	
-    public GameObject(String textureLocation,int width,int height, Point3f centre) {
+    public GameObject(String textureLocation,float width,float height, Point3f centre) {
     	 hasTextured=true;
     	 this.textureLocation=textureLocation;
     	 this.width=width;
@@ -55,12 +55,20 @@ public class GameObject {
 	 
 	}
 
-	public int getWidth() {
+	public float getWidth() {
 		return width;
 	}
 
-	public int getHeight() {
+	public void setWidth(float width) {
+		this.width = width;
+	}
+
+	public float getHeight() {
 		return height;
+	}
+
+	public void setHeight(float height) {
+		this.height = height;
 	}
 
 	public String getTexture() {

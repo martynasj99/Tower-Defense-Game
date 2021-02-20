@@ -1,10 +1,8 @@
 package map;
 
 import util.Point3f;
-
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class Map {
@@ -13,8 +11,8 @@ public class Map {
     private int[][] configuration;
     private int screenWidth;
     private int screenHeight;
-    private float nodeWidth;
-    private float nodeHeight;
+    private int nodeWidth;
+    private int nodeHeight;
 
     private List<Node> enemyPath;
 
@@ -29,8 +27,8 @@ public class Map {
     public void configure(){
         int nw = configuration.length;
         int nh = configuration[0].length;
-        nodeWidth = (float) screenWidth/nw;
-        nodeHeight = (float) screenHeight/nh;
+        nodeWidth = screenWidth/nw;
+        nodeHeight = screenHeight/nh;
 
         this.nodes = new Node[nw][nh];
         for(int i = 0; i < nodes.length; i++){
@@ -42,7 +40,6 @@ public class Map {
                 }
             }
         }
-        this.enemyPath.addAll(Arrays.asList(nodes[0][3], nodes[3][3], nodes[3][7], nodes[5][7], nodes[5][2], nodes[9][2]));
     }
 
     public void useNode(int y, int x){
@@ -81,19 +78,19 @@ public class Map {
         this.screenHeight = screenHeight;
     }
 
-    public float getNodeWidth() {
+    public int getNodeWidth() {
         return nodeWidth;
     }
 
-    public void setNodeWidth(float nodeWidth) {
+    public void setNodeWidth(int nodeWidth) {
         this.nodeWidth = nodeWidth;
     }
 
-    public float getNodeHeight() {
+    public int getNodeHeight() {
         return nodeHeight;
     }
 
-    public void setNodeHeight(float nodeHeight) {
+    public void setNodeHeight(int nodeHeight) {
         this.nodeHeight = nodeHeight;
     }
 

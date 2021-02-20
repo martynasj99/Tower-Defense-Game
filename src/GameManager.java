@@ -14,8 +14,10 @@ import java.util.concurrent.LinkedBlockingDeque;
 
 public class GameManager {
     private static final GameManager gameManager = new GameManager();
-
     private  MapManager mapManager = MapManager.getInstance();
+
+    private final int NODE_WIDTH = mapManager.getCurrentMap().getNodeWidth();
+    private final int NODE_HEIGHT = mapManager.getCurrentMap().getNodeHeight();
 
     private List<Enemy> enemyTypes;
     private List<Turret> turretTypes;
@@ -26,15 +28,17 @@ public class GameManager {
     private Node selected;
     private Turret selectedTurret;
 
+    private boolean isPaused;
+
     private Queue<Enemy> enemiesToSpawn = new LinkedBlockingDeque<>();
 
-    public GameManager(){
+    private GameManager(){
         this.round = 0;
         this.coins = 10;
         this.lives = 10;
+        this.isPaused = false;
         initializeTurrets();
         initializeEnemies();
-        generateWave(this.round);
     }
 
     public static GameManager getInstance(){
@@ -48,13 +52,13 @@ public class GameManager {
     public void initializeEnemies(){
         Map currentMap =  mapManager.getCurrentMap();
         enemyTypes = new ArrayList<>();
-        enemyTypes.add(new Enemy("res/virus/virus_0.png",50,50, new Point3f(currentMap.getEnemyPath().get(0).getPosition().getX(), currentMap.getEnemyPath().get(0).getPosition().getY(),0), 1,100,this.round+1,1));
-        enemyTypes.add(new Enemy("res/virus/virus_1.png",50,50, new Point3f(currentMap.getEnemyPath().get(0).getPosition().getX(), currentMap.getEnemyPath().get(0).getPosition().getY(),0), 1,400,2*this.round+1,1.5f));
-        enemyTypes.add(new Enemy("res/virus/virus_2.png",50,50, new Point3f(currentMap.getEnemyPath().get(0).getPosition().getX(), currentMap.getEnemyPath().get(0).getPosition().getY(),0), 1,500,3*this.round+1,1));
-        enemyTypes.add(new Enemy("res/virus/virus_3.png",50,50, new Point3f(currentMap.getEnemyPath().get(0).getPosition().getX(), currentMap.getEnemyPath().get(0).getPosition().getY(),0), 1,1000, 4*this.round+1, 1));
-        enemyTypes.add(new Enemy("res/virus/virus_4.png",50,50, new Point3f(currentMap.getEnemyPath().get(0).getPosition().getX(), currentMap.getEnemyPath().get(0).getPosition().getY(),0), 1,2000,5*this.round+1, 2));
-        enemyTypes.add(new Enemy("res/virus/virus_5.png",50,50, new Point3f(currentMap.getEnemyPath().get(0).getPosition().getX(), currentMap.getEnemyPath().get(0).getPosition().getY(),0), 1,2000,6*this.round+1, 1.5f));
-        enemyTypes.add(new Enemy("res/virus/virus_6.png",50,50, new Point3f(currentMap.getEnemyPath().get(0).getPosition().getX(), currentMap.getEnemyPath().get(0).getPosition().getY(),0), 1,5000,7*this.round+1, 1));
+        enemyTypes.add(new Enemy("res/virus/virus_0.png",(NODE_WIDTH/2f)+10,(NODE_HEIGHT/2f)+10, new Point3f(currentMap.getEnemyPath().get(0).getPosition().getX(), currentMap.getEnemyPath().get(0).getPosition().getY(),0), 1,100,this.round+1,1));
+        enemyTypes.add(new Enemy("res/virus/virus_1.png",(NODE_WIDTH/2f)+10,(NODE_HEIGHT/2f)+10, new Point3f(currentMap.getEnemyPath().get(0).getPosition().getX(), currentMap.getEnemyPath().get(0).getPosition().getY(),0), 1,400,2*this.round+1,1.5f));
+        enemyTypes.add(new Enemy("res/virus/virus_2.png",(NODE_WIDTH/2f)+10,(NODE_HEIGHT/2f)+10, new Point3f(currentMap.getEnemyPath().get(0).getPosition().getX(), currentMap.getEnemyPath().get(0).getPosition().getY(),0), 1,500,3*this.round+1,1));
+        enemyTypes.add(new Enemy("res/virus/virus_3.png",(NODE_WIDTH/2f)+10,(NODE_HEIGHT/2f)+10, new Point3f(currentMap.getEnemyPath().get(0).getPosition().getX(), currentMap.getEnemyPath().get(0).getPosition().getY(),0), 1,1000, 4*this.round+1, 1));
+        enemyTypes.add(new Enemy("res/virus/virus_4.png",(NODE_WIDTH/2f)+10,(NODE_HEIGHT/2f)+10, new Point3f(currentMap.getEnemyPath().get(0).getPosition().getX(), currentMap.getEnemyPath().get(0).getPosition().getY(),0), 1,2000,5*this.round+1, 2));
+        enemyTypes.add(new Enemy("res/virus/virus_5.png",(NODE_WIDTH/2f)+10,(NODE_HEIGHT/2f)+10, new Point3f(currentMap.getEnemyPath().get(0).getPosition().getX(), currentMap.getEnemyPath().get(0).getPosition().getY(),0), 1,2000,6*this.round+1, 1.5f));
+        enemyTypes.add(new Enemy("res/virus/virus_6.png",(NODE_WIDTH/2f)+10,(NODE_HEIGHT/2f)+10, new Point3f(currentMap.getEnemyPath().get(0).getPosition().getX(), currentMap.getEnemyPath().get(0).getPosition().getY(),0), 1,5000,7*this.round+1, 1));
     }
 
     public void initializeTurrets(){
@@ -88,6 +92,15 @@ public class GameManager {
     public Enemy getNextEnemy(){
         if(!enemiesToSpawn.isEmpty()) return enemiesToSpawn.poll();
         return null;
+    }
+
+    public void reset(){
+        this.round = 0;
+        this.coins = 10;
+        this.lives = 10;
+        this.isPaused = false;
+        initializeTurrets();
+        initializeEnemies();
     }
 
     public void changeCoins(int amt){
@@ -160,5 +173,13 @@ public class GameManager {
 
     public void setSelectedTurret(Turret selectedTurret) {
         this.selectedTurret = selectedTurret;
+    }
+
+    public boolean isPaused() {
+        return isPaused;
+    }
+
+    public void setPaused(boolean paused) {
+        isPaused = paused;
     }
 }

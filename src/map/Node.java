@@ -1,7 +1,6 @@
 package map;
 
 import GameObjects.Turret;
-import util.GameObject;
 import util.Point3f;
 
 import java.awt.*;

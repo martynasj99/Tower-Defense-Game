@@ -16,7 +16,7 @@ public class Turret extends GameObject {
     private Bullet bullet;
     private Enemy target;
 
-    public Turret(String textureLocation, int width, int height, Point3f centre, String type, int cost, int speed, float range, Bullet bullet) {
+    public Turret(String textureLocation, float width, float height, Point3f centre, String type, int cost, int speed, float range, Bullet bullet) {
         super(textureLocation, width, height, centre);
         this.type = type;
         this.level = 0;

@@ -12,7 +12,7 @@ public class Enemy extends GameObject {
     private int reward;
     private float speed;
 
-    public Enemy(String textureLocation, int width, int height, Point3f centre, int level, int initialHealth, int reward, float speed) {
+    public Enemy(String textureLocation, float width, float height, Point3f centre, int level, int initialHealth, int reward, float speed) {
         super(textureLocation, width, height, centre);
         this.level = level;
         this.initialHealth = initialHealth;
