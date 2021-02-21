@@ -42,7 +42,7 @@ public class MainWindow {
 	 private static Model gameWorld = new Model();
 	 private static Viewer canvas = new Viewer(gameWorld);
 	 private Controller controller = new Controller();
-	 private MapManager mapManager = MapManager.getInstance();
+	 private static MapManager mapManager = MapManager.getInstance();
 	 private AudioManager audioManager = AudioManager.getInstance();
 	 private static GameManager gameManager = GameManager.getInstance();
 
@@ -60,6 +60,8 @@ public class MainWindow {
 	 private static JButton exitGameButton;
 	 private static JButton startMenuButton;
 	 private static List<JButton> mapButtons;
+	 private static List<JButton> difficultButtons;
+
 	 private JButton muteButton;
 
 
@@ -79,6 +81,7 @@ public class MainWindow {
 
 		mapButtons = new ArrayList<>();
 
+
 		setUpStartMenu();
 		setUpMaps();
 		setUpInfoText();
@@ -88,6 +91,7 @@ public class MainWindow {
 		setUpPause();
 		setUpMute();
 		setUpExit();
+		setUpDifficulty();
 
 		canvas.addMouseListener(controller);
 		canvas.addMouseMotionListener(controller);
@@ -194,8 +198,6 @@ public class MainWindow {
 
 		startMenuButton.addActionListener(e -> {
 			changeGameState(false);
-			gameWorld.startWave();
-			gameWorld.scheduleFire();
 		});
 		frame.add(startMenuButton);
 	}
@@ -252,6 +254,7 @@ public class MainWindow {
 			});
 			frame.add(map);
 		}
+		//mapButtons.get(0).setEnabled(false); //default
 	}
 
 	private void setUpMute(){
@@ -279,14 +282,37 @@ public class MainWindow {
 		nextInfoOffset++;
 		exitGameButton.addActionListener(e ->{
 			changeGameState(true);
-			gameWorld.clearAll();
-			gameManager.reset();
-			mapManager.configureMap();
 		});
 		frame.add(exitGameButton);
 	}
 
+	private void setUpDifficulty(){
+		String[] difficulties = {"EASY", "MEDIUM", "HARD"};
+		difficultButtons = new ArrayList<>();
+		for (int i = 0; i < difficulties.length; i++) {
+			JButton button = new JButton(difficulties[i]);
+			button.setBounds((mapManager.getSCREEN_WIDTH()/2)-(((INFO_PANEL_LENGTH/2)*3)/2)+(INFO_PANEL_LENGTH/2)*(i+1), 400, INFO_PANEL_LENGTH/2, DEFAULT_INFO_HEIGHT*2);
+			difficultButtons.add(button);
+			button.addActionListener(e ->{
+				gameManager.setDifficulty(difficultButtons.indexOf(button));
+				for(JButton difButton : difficultButtons) difButton.setEnabled(true);
+				button.setEnabled(false);
+			});
+
+			frame.add(button);
+		}
+		difficultButtons.get(1).setEnabled(false); //default
+	}
+
 	private static void changeGameState(boolean isEnd){
+		if(isEnd){
+			gameWorld.clearAll();
+			mapManager.configureMap();
+		}else{
+			gameWorld.startWave();
+			gameWorld.scheduleFire();
+		}
+		gameManager.init();
 		startMenuButton.setVisible(isEnd);
 		canvas.setVisible(!isEnd);
 		infoText.setVisible(!isEnd);
@@ -294,8 +320,15 @@ public class MainWindow {
 		pauseButton.setVisible(!isEnd);
 		nextWave.setVisible(!isEnd);
 		exitGameButton.setVisible(!isEnd);
-		for (JButton mapButton : mapButtons) mapButton.setVisible(isEnd);
+		for (JButton mapButton : mapButtons){
+			mapButton.setVisible(isEnd);
+			mapButton.setEnabled(true);
+		}
+		for(JButton difficultyButton : difficultButtons) difficultyButton.setVisible(isEnd);
+
 		startGame=!isEnd;
 		showSelectedTurret(false);
+
+
 	}
 }

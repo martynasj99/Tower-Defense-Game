@@ -13,11 +13,19 @@ import java.util.Queue;
 import java.util.concurrent.LinkedBlockingDeque;
 
 public class GameManager {
+    public enum Difficulty {
+        EASY,
+        MEDIUM,
+        HARD
+    }
+
     private static final GameManager gameManager = new GameManager();
     private  MapManager mapManager = MapManager.getInstance();
 
     private final int NODE_WIDTH = mapManager.getCurrentMap().getNodeWidth();
     private final int NODE_HEIGHT = mapManager.getCurrentMap().getNodeHeight();
+
+    private Difficulty difficulty;
 
     private List<Enemy> enemyTypes;
     private List<Turret> turretTypes;
@@ -33,12 +41,8 @@ public class GameManager {
     private Queue<Enemy> enemiesToSpawn = new LinkedBlockingDeque<>();
 
     private GameManager(){
-        this.round = 0;
-        this.coins = 10;
-        this.lives = 10;
-        this.isPaused = false;
-        initializeTurrets();
-        initializeEnemies();
+        this.difficulty = Difficulty.MEDIUM;
+        init();
     }
 
     public static GameManager getInstance(){
@@ -47,6 +51,32 @@ public class GameManager {
 
     public void setSelectedTurret(int ind){
         this.selectedTurret = turretTypes.get(ind);
+    }
+
+    public void init(){
+        switch (difficulty){
+            case EASY:
+                this.coins = 50;
+                this.lives = 20;
+                break;
+            case MEDIUM:
+                this.coins = 25;
+                this.lives = 15;
+                break;
+            case HARD:
+                this.coins = 10;
+                this.lives = 10;
+                break;
+            default:
+                break;
+        }
+        this.enemiesToSpawn.clear();
+        this.round = 0;
+        this.isPaused = false;
+        this.selected = null;
+        initializeTurrets();
+        initializeEnemies();
+
     }
 
     public void initializeEnemies(){
@@ -94,13 +124,23 @@ public class GameManager {
         return null;
     }
 
-    public void reset(){
-        this.round = 0;
-        this.coins = 10;
-        this.lives = 10;
-        this.isPaused = false;
-        initializeTurrets();
-        initializeEnemies();
+
+
+    public void setDifficulty(int num){
+        switch (num){
+            case 0:
+                this.difficulty = Difficulty.EASY;
+                break;
+            case 1:
+                this.difficulty = Difficulty.MEDIUM;
+                break;
+            case 2:
+                this.difficulty = Difficulty.HARD;
+                break;
+            default:
+                this.difficulty = Difficulty.MEDIUM;
+                break;
+        }
     }
 
     public void changeCoins(int amt){
@@ -182,4 +222,9 @@ public class GameManager {
     public void setPaused(boolean paused) {
         isPaused = paused;
     }
+
+    public Difficulty getDifficulty() {
+        return difficulty;
+    }
+
 }

@@ -88,6 +88,12 @@ public class Model {
 			Point3f curr = temp.getCentre();
 			Point3f dest = currentMap.getEnemyPath().get(temp.getProgress()+1).getPosition();
 			Point3f diff = new Point3f(curr.getX()-dest.getX(), curr.getY()-dest.getY(), 0);
+
+/*			Vector3f direction = new Vector3f(
+					Math.abs(diff.getY()) <= 1 ? (diff.getX() < 0 ? 1 : -1) : 0,
+					Math.abs(diff.getX()) <= 1 ? (diff.getY() < 0 ? -1 : 1) : 0,
+					0);*/
+
 			Vector3f direction;
 
 			if(Math.abs(diff.getX()) <= 1 && Math.abs(diff.getY())  <= 1) {
@@ -96,6 +102,12 @@ public class Model {
 			}
 			else if(Math.abs(diff.getX()) <= 1) direction = new Vector3f(0, (diff.getY() < 0 ? -1 : 1)*temp.getSpeed(), 0);
 			else direction = new Vector3f((diff.getX() < 0 ? 1 : -1 )*temp.getSpeed(), 0, 0 );
+
+
+			System.out.println("diff x: " + diff.getX() + " diff y: " + diff.getY());
+			System.out.println("dir x: " + direction.getX() + " dir y: " + direction.getY());
+
+
 
 			temp.getCentre().ApplyVector(direction);
 			if (temp.getProgress() == currentMap.getEnemyPath().size()-1){
@@ -172,16 +184,15 @@ public class Model {
 
 			Bullet bullet = turret.getBullet();
 			Point3f tur = turret.getCentre();
-			Point3f target;
-			target = turret.getTarget().getCentre();
+			Point3f target = turret.getTarget().getCentre();
 
 			float diff_x = target.getX() - tur.getX();
 			float diff_y = (target.getY() - tur.getY())*-1;
 
 			float max = Math.max(Math.abs(diff_x), Math.abs(diff_y));
-			Vector3f dir = new Vector3f((diff_x/max)*8, (diff_y/max)*8, 0);
+			Vector3f direction = new Vector3f((diff_x/max)*8, (diff_y/max)*8, 0);
 
-			bullet.setDirection(dir);
+			bullet.setDirection(direction);
 			bullet.setCentre(new Point3f(turret.getCentre().getX(), turret.getCentre().getY(), 0));
 			bulletList.add(bullet);
 			if(!audioManager.isMute()) audioManager.playSound("res/music/shoot.wav").start();
