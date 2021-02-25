@@ -61,9 +61,10 @@ public class MainWindow {
 	 private static JButton startMenuButton;
 	 private static List<JButton> mapButtons;
 	 private static List<JButton> difficultButtons;
+	 private static List<JButton> gameSpeedButtons;
+	 private static JButton mapEditorButton;
 
 	 private JButton muteButton;
-
 
 	 private static Clip backgroundClip;
 
@@ -79,26 +80,23 @@ public class MainWindow {
 		backgroundClip = audioManager.playSound("res/music/background-music.wav");
 		backgroundClip.start();
 
-		mapButtons = new ArrayList<>();
-
-
 		setUpStartMenu();
 		setUpMaps();
 		setUpInfoText();
 		setUpSelectTurrets();
 		setUpSelectedPanel();
 		setUpNextWaveButton();
-		setUpPause();
 		setUpMute();
 		setUpExit();
+		setUpMapEditor();
 		setUpDifficulty();
+		setUpGameSpeedControl();
 
 		canvas.addMouseListener(controller);
 		canvas.addMouseMotionListener(controller);
 		canvas.requestFocusInWindow(); // making sure that the Canvas is in focus so keyboard input will be taking in .
 
 		changeGameState(true);
-
 		frame.setVisible(true);
 	}
 
@@ -107,12 +105,12 @@ public class MainWindow {
 
 		Thread game = new Thread(() -> {
 			while(true){
-				//swing has timer class to help us time this but I'm writing my own, you can of course use the timer, but I want to set FPS and display it
 				int TimeBetweenFrames =  1000 / TargetFPS;
 				long FrameCheck = System.currentTimeMillis() + (long) TimeBetweenFrames;
 
 				while (FrameCheck > System.currentTimeMillis()){} //wait till next time step
-				if(startGame && !gameManager.isPaused()) {
+
+				if(startGame && gameManager.getGameSpeed() != GameManager.GameSpeed.PAUSED) {
 					gameLoop();
 				}
 				UnitTests.CheckFrameRate(System.currentTimeMillis(),FrameCheck, TargetFPS);
@@ -194,7 +192,7 @@ public class MainWindow {
 
 	private void setUpStartMenu(){
 		startMenuButton = new JButton("Start Game");
-		startMenuButton.setBounds(400, 500, INFO_PANEL_LENGTH, DEFAULT_INFO_HEIGHT*2);
+		startMenuButton.setBounds(400, 600, INFO_PANEL_LENGTH, DEFAULT_INFO_HEIGHT*2);
 
 		startMenuButton.addActionListener(e -> {
 			changeGameState(false);
@@ -220,26 +218,12 @@ public class MainWindow {
 		frame.add(selectTurret);
 	}
 
-	private void setUpPause(){
-		pauseButton = new JButton("Pause Game");
-		pauseButton.setBounds(mapManager.getSCREEN_WIDTH(), DEFAULT_INFO_HEIGHT*nextInfoOffset, INFO_PANEL_LENGTH, DEFAULT_INFO_HEIGHT);
-		nextInfoOffset++;
-		pauseButton.addActionListener(e -> {
-			gameManager.setPaused(!gameManager.isPaused());
-			if (gameManager.isPaused()) {
-				pauseButton.setText("Resume Game");
-			} else {
-				pauseButton.setText("Pause Game");
-			}
-		});
-		frame.add(pauseButton);
-	}
-
 	private void setUpMaps(){
+		mapButtons = new ArrayList<>();
 		String[] mapImages = {"res/map/map01.jpg", "res/map/map02.jpg", "res/map/map03.jpg"};
-		for(int i = 0; i < mapManager.getMaps().size(); i++){
+		for(int i = 0; i < mapManager.getGameMaps().size(); i++){
 			int height = mapManager.getSCREEN_HEIGHT()/3;
-			int width = (mapManager.getSCREEN_WIDTH()+INFO_PANEL_LENGTH)/mapManager.getMaps().size();
+			int width = (mapManager.getSCREEN_WIDTH()+INFO_PANEL_LENGTH)/mapManager.getGameMaps().size();
 
 			//reference: https://stackoverflow.com/questions/13810213/java-stretch-icon-to-fit-button
 			JButton map = new JButton(new ImageIcon(((new ImageIcon(mapImages[i]).getImage()
@@ -247,7 +231,7 @@ public class MainWindow {
 			map.setBounds(width*i, 100, width, height);
 			mapButtons.add(map);
 			map.addActionListener(e -> {
-				mapManager.setCurrentMap(mapButtons.indexOf(map));
+				mapManager.setCurrentGameMap(mapButtons.indexOf(map));
 				gameManager.initializeEnemies();
 				for(JButton button : mapButtons) button.setEnabled(true);
 				map.setEnabled(false);
@@ -276,6 +260,42 @@ public class MainWindow {
 		frame.add(muteButton);
 	}
 
+	private void setUpGameSpeedControl(){
+		//<div>Icons made by <a href="https://www.flaticon.com/authors/pixel-perfect" title="Pixel perfect">Pixel perfect</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>
+		//<div>Icons made by <a href="https://www.flaticon.com/authors/smashicons" title="Smashicons">Smashicons</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>
+		gameSpeedButtons = new ArrayList<>();
+		String[] icons = {"res/icon/pause.png", "res/icon/play.png", "res/icon/fast-forward.png"};
+		//reference: https://stackoverflow.com/questions/13810213/java-stretch-icon-to-fit-button
+		for(int i = 0; i < icons.length; i++){
+			JButton button = new JButton(new ImageIcon(((new ImageIcon(icons[i]).getImage()
+					.getScaledInstance(DEFAULT_INFO_HEIGHT*2, DEFAULT_INFO_HEIGHT*2, java.awt.Image.SCALE_SMOOTH)))));
+			button.setBackground(Color.WHITE);
+			button.setBounds(mapManager.getSCREEN_WIDTH()+ (INFO_PANEL_LENGTH/3 *i), DEFAULT_INFO_HEIGHT*nextInfoOffset, INFO_PANEL_LENGTH/3, DEFAULT_INFO_HEIGHT*2);
+			gameSpeedButtons.add(button);
+			button.addActionListener(e ->{
+				switch (gameSpeedButtons.indexOf(button)){
+					case 0:
+						gameManager.setGameSpeed(GameManager.GameSpeed.PAUSED);
+						break;
+					case 1:
+						gameManager.setGameSpeed(GameManager.GameSpeed.NORMAL);
+						break;
+					case 2:
+						gameManager.setGameSpeed(GameManager.GameSpeed.FAST);
+						break;
+					default:
+						break;
+				}
+				for(JButton btn : gameSpeedButtons) btn.setEnabled(true);
+				button.setEnabled(false);
+			});
+			frame.add(button);
+		}
+		gameSpeedButtons.get(1).setEnabled(false);
+
+
+	}
+
 	private void setUpExit(){
 		exitGameButton = new JButton("Menu");
 		exitGameButton.setBounds(mapManager.getSCREEN_WIDTH(), DEFAULT_INFO_HEIGHT*nextInfoOffset, INFO_PANEL_LENGTH, DEFAULT_INFO_HEIGHT);
@@ -291,7 +311,7 @@ public class MainWindow {
 		difficultButtons = new ArrayList<>();
 		for (int i = 0; i < difficulties.length; i++) {
 			JButton button = new JButton(difficulties[i]);
-			button.setBounds((mapManager.getSCREEN_WIDTH()/2)-(((INFO_PANEL_LENGTH/2)*3)/2)+(INFO_PANEL_LENGTH/2)*(i+1), 400, INFO_PANEL_LENGTH/2, DEFAULT_INFO_HEIGHT*2);
+			button.setBounds((mapManager.getSCREEN_WIDTH()/2)-(((INFO_PANEL_LENGTH/2)*3)/2)+(INFO_PANEL_LENGTH/2)*(i+1), 500, INFO_PANEL_LENGTH/2, DEFAULT_INFO_HEIGHT*2);
 			difficultButtons.add(button);
 			button.addActionListener(e ->{
 				gameManager.setDifficulty(difficultButtons.indexOf(button));
@@ -302,6 +322,13 @@ public class MainWindow {
 			frame.add(button);
 		}
 		difficultButtons.get(1).setEnabled(false); //default
+	}
+
+	private void setUpMapEditor(){
+		mapEditorButton = new JButton("Map Editor");
+		mapEditorButton.setBounds(mapManager.getSCREEN_WIDTH()/2, 400, INFO_PANEL_LENGTH, DEFAULT_INFO_HEIGHT*2);
+		nextInfoOffset++;
+		frame.add(mapEditorButton);
 	}
 
 	private static void changeGameState(boolean isEnd){
@@ -317,18 +344,16 @@ public class MainWindow {
 		canvas.setVisible(!isEnd);
 		infoText.setVisible(!isEnd);
 		selectTurret.setVisible(!isEnd);
-		pauseButton.setVisible(!isEnd);
 		nextWave.setVisible(!isEnd);
 		exitGameButton.setVisible(!isEnd);
+		mapEditorButton.setVisible(isEnd);
 		for (JButton mapButton : mapButtons){
 			mapButton.setVisible(isEnd);
 			mapButton.setEnabled(true);
 		}
 		for(JButton difficultyButton : difficultButtons) difficultyButton.setVisible(isEnd);
-
+		for(JButton gameSpeedButton : gameSpeedButtons) gameSpeedButton.setVisible(!isEnd);
 		startGame=!isEnd;
 		showSelectedTurret(false);
-
-
 	}
 }

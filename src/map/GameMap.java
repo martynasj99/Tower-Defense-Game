@@ -5,7 +5,7 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Map {
+public class GameMap {
 
     private Node[][] nodes;
     private int[][] configuration;
@@ -16,7 +16,7 @@ public class Map {
 
     private List<Node> enemyPath;
 
-    public Map(int screenWidth, int screenHeight, int[][] configuration) {
+    public GameMap(int screenWidth, int screenHeight, int[][] configuration) {
         this.enemyPath = new ArrayList<>();
         this.configuration = configuration;
         this.screenWidth = screenWidth;
@@ -30,13 +30,14 @@ public class Map {
         nodeWidth = screenWidth/nw;
         nodeHeight = screenHeight/nh;
 
+
         this.nodes = new Node[nw][nh];
         for(int i = 0; i < nodes.length; i++){
             for(int j = 0; j < nodes[0].length; j++){
                 if(configuration[i][j] == 0)
-                    nodes[i][j] = new Node(nodeWidth-1, nodeHeight-1, Color.GREEN, new Point3f((j*nodeWidth), (i*nodeHeight),0), true);
+                    nodes[i][j] = new Node("res/map/grass.png", nodeWidth-1, nodeHeight-1, new Point3f((j*nodeWidth), (i*nodeHeight),0), true);
                 else{
-                    nodes[i][j] = new Node(nodeWidth-1, nodeHeight-1, new Color(102,71,0), new Point3f((j*nodeWidth), (i*nodeHeight),0), false);
+                    nodes[i][j] = new Node("res/map/dirt.png", nodeWidth-1, nodeHeight-1, new Point3f((j*nodeWidth), (i*nodeHeight),0), false);
                 }
             }
         }

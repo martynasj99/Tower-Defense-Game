@@ -3,25 +3,14 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.LayoutManager;
-import java.awt.Rectangle;
-import java.awt.TexturePaint;
 import java.awt.geom.AffineTransform;
-import java.awt.image.AffineTransformOp;
-import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
-import java.util.Iterator;
-
-import javax.imageio.ImageIO;
 import javax.swing.*;
-
+import GameObjects.Bullet;
 import GameObjects.Enemy;
 import GameObjects.Turret;
 import map.MapManager;
 import map.Node;
-import util.GameObject;
-import util.Point3f;
-
 
 /*
  * Created by Abraham Campbell on 15/01/2020.
@@ -52,14 +41,13 @@ SOFTWARE.
 public class Viewer extends JPanel {
 	private long CurrentAnimationTime= 0; 
 	
-	private Model gameworld =new Model();
+	private Model gameWorld =new Model();
 	private MapManager mapManager = MapManager.getInstance();
 	private Controller controller = Controller.getInstance();
 	private GameManager gameManager = GameManager.getInstance();
 
-	 
 	public Viewer(Model World) {
-		this.gameworld=World;
+		this.gameWorld=World;
 	}
 
 	public Viewer(LayoutManager layout) {
@@ -82,13 +70,13 @@ public class Viewer extends JPanel {
 		super.paintComponent(g);
 		CurrentAnimationTime++; // runs animation time step
 		drawBackground(g);
-		gameworld.getTurrets().forEach((temp) -> drawPlayer(temp, g));
-		gameworld.getBullets().forEach((temp) -> drawBullet((int) temp.getCentre().getX(), (int) temp.getCentre().getY(), (int) temp.getWidth(), (int) temp.getHeight(), temp.getTexture(), g));
-		gameworld.getEnemies().forEach((temp) -> drawEnemies(temp,g));
+
+		gameWorld.getTurrets().forEach((temp) -> drawPlayer(temp, g));
+		gameWorld.getBullets().forEach((temp) -> drawBullet(temp, g));
+		gameWorld.getEnemies().forEach((temp) -> drawEnemies(temp,g));
 
 		markSelected(g);
 	}
-
 
 	//https://gamesupply.itch.io/virus-free-mini-pack
 	private void drawEnemies(Enemy enemy, Graphics g) {
@@ -98,48 +86,49 @@ public class Viewer extends JPanel {
 		int width = (int) enemy.getWidth();
 		int height = (int) enemy.getHeight();
 		float healthRemainingPerc = (float) enemy.getHealth()/enemy.getInitialHealth();
-		File TextureToLoad = new File(texture);
-		try {
-			Image myImage = ImageIO.read(TextureToLoad);
-			//The spirte is 32x32 pixel wide and 4 of them are placed together so we need to grab a different one each time 
-			//remember your training :-) computer science everything starts at 0 so 32 pixels gets us to 31  
-			//int currentPositionInAnimation= ((int) (CurrentAnimationTime%4 )*32); //slows down animation so every 10 frames we get another frame so every 100ms
 
-			if(healthRemainingPerc > .66) g.setColor(Color.GREEN);
-			else if(healthRemainingPerc >= .33 && healthRemainingPerc <= .66) g.setColor(Color.ORANGE);
-			else g.setColor(Color.RED);
+		mapManager.addToTileImages(texture);
+		Image myImage = mapManager.getTileImages().get(texture);
 
-			g.drawRect(x,y, width, height/8);
-			g.fillRect(x,y, (int)(width*healthRemainingPerc), height/8);
-			//g.drawImage(myImage, x,y, x+width, y+height, currentPositionInAnimation  , 0, currentPositionInAnimation+31, 32, null);
-			g.drawImage(myImage, x,y, width, height, null);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		if(healthRemainingPerc > .66) g.setColor(Color.GREEN);
+		else if(healthRemainingPerc >= .33 && healthRemainingPerc <= .66) g.setColor(Color.ORANGE);
+		else g.setColor(Color.RED);
+
+		g.drawRect(x,y, width, height/8);
+		g.fillRect(x,y, (int)(width*healthRemainingPerc), height/8);
+		g.drawImage(myImage, x,y, width, height, null);
+
 	}
 
 	private void drawBackground(Graphics g){
-		Node[][] nodes = mapManager.getCurrentMap().getNodes();
+		Node[][] nodes = mapManager.getCurrentGameMap().getNodes();
 		for(int i = 0; i < nodes.length; i++){
 			for(int j = 0; j < nodes[0].length; j++){
 				Node node = nodes[i][j];
+				mapManager.addToTileImages(node.getTexture());
+				Image image = mapManager.getTileImages().get(node.getTexture());
+
 				float mouseX = controller.getMouseMovePosition().getX();
 				float mouseY = controller.getMouseMovePosition().getY();
-				if(node.isAvailable() && mouseX >= node.getPosition().getX() &&
-						mouseX <= node.getPosition().getX() +node.getWidth() &&
-						mouseY >= node.getPosition().getY()  &&
-						mouseY <= node.getPosition().getY()+node.getHeight() ){
-					g.setColor(new Color(0,194,16));
-				}else{
-					g.setColor(node.getColor());
+				if(node.isAvailable() && mouseX >= node.getCentre().getX() &&
+						mouseX <= node.getCentre().getX() +node.getWidth() &&
+						mouseY >= node.getCentre().getY()  &&
+						mouseY <= node.getCentre().getY()+node.getHeight() ){
+					node.setTextureLocation("res/map/grass-selected.png");
+				}else if (node.isAvailable()){
+					node.setTextureLocation("res/map/grass.png");
 				}
-
-				g.fillRect((int) node.getPosition().getX(), (int) node.getPosition().getY(), (int) node.getWidth(), (int) node.getHeight());
+				g.drawImage(image, (int) node.getCentre().getX(), (int) node.getCentre().getY(),(int) node.getWidth(), (int) node.getHeight(), null);
 			}
 		}
 	}
 	
-	private void drawBullet(int x, int y, int width, int height, String texture,Graphics g){
+	private void drawBullet(Bullet bullet, Graphics g){
+		int x = (int) bullet.getCentre().getX();
+		int y = (int) bullet.getCentre().getY();
+		int width = (int) bullet.getWidth();
+		int height = (int) bullet.getHeight();
+
 		g.setColor(Color.RED);
 		g.fillArc(x,y,width, height, 0, 360);
 	}
@@ -153,45 +142,47 @@ public class Viewer extends JPanel {
 		int width = (int)player.getWidth();
 		int height = (int) player.getHeight();
 		int range = (int) player.getRange();
+		String type = player.getType();
 
-		File TextureToLoad = new File(texture);
-		try {
-			BufferedImage base = ImageIO.read(new File("res/turrets/Tower.png"));
-			BufferedImage myImage = ImageIO.read(TextureToLoad);
+		mapManager.addToTileImages("res/turrets/Tower.png");
+		Image base = mapManager.getTileImages().get("res/turrets/Tower.png");
+		mapManager.addToTileImages(texture);
+		Image myImage = mapManager.getTileImages().get(texture);
 
-            double angle = 0;
-            if(player.getTarget() != null)
-                //https://stackoverflow.com/questions/2676719/calculating-the-angle-between-the-line-defined-by-two-points
-                angle = Math.atan2(player.getTarget().getCentre().getY() - player.getCentre().getY(), player.getTarget().getCentre().getX() - player.getCentre().getX()) * 180 / Math.PI;
-
-            g.drawImage(base, x, y, mapManager.getCurrentMap().getNodeWidth()-5, mapManager.getCurrentMap().getNodeHeight(), null); //TODO MAKE IT ADAPT TO TILE SIZE
-            //Reference : https://gist.github.com/sye8/edba2dfda1645b37bfcf5b9bd9ce3a75 (Some parts)
-            g2d.rotate(Math.toRadians(-1*angle), (x)+(mapManager.getCurrentMap().getNodeHeight()/2f) - 21+(double)(width/2),(y)+(mapManager.getCurrentMap().getNodeHeight()/2f) -50+(double)(height/2));
-			g2d.drawImage(myImage, x+(mapManager.getCurrentMap().getNodeHeight()/2) - 21,y+(mapManager.getCurrentMap().getNodeHeight()/2) -50, width, height, null);
-			g2d.rotate(Math.toRadians(angle),  (x)+(mapManager.getCurrentMap().getNodeHeight()/2f) - 21+(double)(width/2),(y)+(mapManager.getCurrentMap().getNodeHeight()/2f) -50+(double)(height/2));
-
-			if(controller.getMouseMovePosition().getX() >= x &&
-					controller.getMouseMovePosition().getX() <= x+width &&
-					controller.getMouseMovePosition().getY() >= y  &&
-					controller.getMouseMovePosition().getY() <= y+height ){
-				g.setColor(Color.RED);
-				g.drawArc(x-(range/2),y-(range/2), width+range, height+range, 0, 360);
+		AffineTransform old = g2d.getTransform();
+		double angle = 0;
+		g.drawImage(base, x, y, mapManager.getCurrentGameMap().getNodeWidth()-5, mapManager.getCurrentGameMap().getNodeHeight(), null);
+		if(!type.equals("Controlled")){
+			if(player.getTarget() != null) {
+				//https://stackoverflow.com/questions/2676719/calculating-the-angle-between-the-line-defined-by-two-points
+				angle = Math.atan2(player.getTarget().getCentre().getY() - player.getCentre().getY(), player.getTarget().getCentre().getX() - player.getCentre().getX()) * 180 / Math.PI;
+				angle+=90;
 			}
-
-		} catch (IOException e) {
-			e.printStackTrace();
+			//Reference : https://gist.github.com/sye8/edba2dfda1645b37bfcf5b9bd9ce3a75 (Some parts)
+			g2d.rotate(Math.toRadians(angle), (x)+(mapManager.getCurrentGameMap().getNodeHeight()/2f) - 21+(double)(width/2),(y)+(mapManager.getCurrentGameMap().getNodeHeight()/2f) -35+(double)(height/2));
+			g2d.drawImage(myImage, x+(mapManager.getCurrentGameMap().getNodeHeight()/2) - 21,y+(mapManager.getCurrentGameMap().getNodeHeight()/2) -50, width, height, null);
+			g2d.setTransform(old);
+		}else{
+			angle = Math.atan2(controller.getMouseMovePosition().getY() - player.getCentre().getY(), controller.getMouseMovePosition().getX() - player.getCentre().getX()) * 180 / Math.PI;
+			angle+= 90;
+			g2d.rotate(Math.toRadians(angle), x+(mapManager.getCurrentGameMap().getNodeHeight()/2f) - 50+(double)(width/2), y+(mapManager.getCurrentGameMap().getNodeHeight()/2f) -50+(double)(height/2));
+			g.drawImage(myImage, x-20, y-20, width, height, null);
+			g2d.setTransform(old);
 		}
 
-		//g.drawImage(img, dx1, dy1, dx2, dy2, sx1, sy1, sx2, sy2, observer));
-		//Lighnting Png from https://opengameart.org/content/animated-spaceships  its 32x32 thats why I know to increament by 32 each time 
-		// Bullets from https://opengameart.org/forumtopic/tatermands-art 
-		// background image from https://www.needpix.com/photo/download/677346/space-stars-nebula-background-galaxy-universe-free-pictures-free-photos-free-images
+		if(controller.getMouseMovePosition().getX() >= x &&
+				controller.getMouseMovePosition().getX() <= x+width &&
+				controller.getMouseMovePosition().getY() >= y  &&
+				controller.getMouseMovePosition().getY() <= y+height ){
+			g.setColor(Color.RED);
+			g.drawArc(x-(range/2),y-(range/2), width+range, height+range, 0, 360);
+		}
 	}
     private void markSelected(Graphics g){
 	    Node selected = gameManager.getSelected();
 	    if(selected != null){
             g.setColor(Color.BLUE);
-            g.drawArc((int) selected.getPosition().getX(), (int)selected.getPosition().getY(), (int) selected.getWidth(), (int) selected.getHeight(), 0, 360);
+            g.drawArc((int) selected.getCentre().getX(), (int)selected.getCentre().getY(), (int) selected.getWidth(), (int) selected.getHeight(), 0, 360);
         }
     }
 }

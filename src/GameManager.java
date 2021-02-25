@@ -1,7 +1,7 @@
 import GameObjects.Bullet;
 import GameObjects.Enemy;
 import GameObjects.Turret;
-import map.Map;
+import map.GameMap;
 import map.MapManager;
 import map.Node;
 import util.Point3f;
@@ -19,13 +19,21 @@ public class GameManager {
         HARD
     }
 
+    public enum GameSpeed{
+        PAUSED,
+        NORMAL,
+        FAST
+    }
+
     private static final GameManager gameManager = new GameManager();
     private  MapManager mapManager = MapManager.getInstance();
 
-    private final int NODE_WIDTH = mapManager.getCurrentMap().getNodeWidth();
-    private final int NODE_HEIGHT = mapManager.getCurrentMap().getNodeHeight();
+    private final int NODE_WIDTH = mapManager.getCurrentGameMap().getNodeWidth();
+    private final int NODE_HEIGHT = mapManager.getCurrentGameMap().getNodeHeight();
 
     private Difficulty difficulty;
+    private GameSpeed gameSpeed;
+
 
     private List<Enemy> enemyTypes;
     private List<Turret> turretTypes;
@@ -71,6 +79,7 @@ public class GameManager {
                 break;
         }
         this.enemiesToSpawn.clear();
+        this.gameSpeed = GameSpeed.NORMAL;
         this.round = 0;
         this.isPaused = false;
         this.selected = null;
@@ -80,15 +89,15 @@ public class GameManager {
     }
 
     public void initializeEnemies(){
-        Map currentMap =  mapManager.getCurrentMap();
+        GameMap currentGameMap =  mapManager.getCurrentGameMap();
         enemyTypes = new ArrayList<>();
-        enemyTypes.add(new Enemy("res/virus/virus_0.png",(NODE_WIDTH/2f)+10,(NODE_HEIGHT/2f)+10, new Point3f(currentMap.getEnemyPath().get(0).getPosition().getX(), currentMap.getEnemyPath().get(0).getPosition().getY(),0), 1,100,this.round+1,1));
-        enemyTypes.add(new Enemy("res/virus/virus_1.png",(NODE_WIDTH/2f)+10,(NODE_HEIGHT/2f)+10, new Point3f(currentMap.getEnemyPath().get(0).getPosition().getX(), currentMap.getEnemyPath().get(0).getPosition().getY(),0), 1,400,2*this.round+1,1.5f));
-        enemyTypes.add(new Enemy("res/virus/virus_2.png",(NODE_WIDTH/2f)+10,(NODE_HEIGHT/2f)+10, new Point3f(currentMap.getEnemyPath().get(0).getPosition().getX(), currentMap.getEnemyPath().get(0).getPosition().getY(),0), 1,500,3*this.round+1,1));
-        enemyTypes.add(new Enemy("res/virus/virus_3.png",(NODE_WIDTH/2f)+10,(NODE_HEIGHT/2f)+10, new Point3f(currentMap.getEnemyPath().get(0).getPosition().getX(), currentMap.getEnemyPath().get(0).getPosition().getY(),0), 1,1000, 4*this.round+1, 1));
-        enemyTypes.add(new Enemy("res/virus/virus_4.png",(NODE_WIDTH/2f)+10,(NODE_HEIGHT/2f)+10, new Point3f(currentMap.getEnemyPath().get(0).getPosition().getX(), currentMap.getEnemyPath().get(0).getPosition().getY(),0), 1,2000,5*this.round+1, 2));
-        enemyTypes.add(new Enemy("res/virus/virus_5.png",(NODE_WIDTH/2f)+10,(NODE_HEIGHT/2f)+10, new Point3f(currentMap.getEnemyPath().get(0).getPosition().getX(), currentMap.getEnemyPath().get(0).getPosition().getY(),0), 1,2000,6*this.round+1, 1.5f));
-        enemyTypes.add(new Enemy("res/virus/virus_6.png",(NODE_WIDTH/2f)+10,(NODE_HEIGHT/2f)+10, new Point3f(currentMap.getEnemyPath().get(0).getPosition().getX(), currentMap.getEnemyPath().get(0).getPosition().getY(),0), 1,5000,7*this.round+1, 1));
+        enemyTypes.add(new Enemy("res/virus/virus_0.png",(NODE_WIDTH/2f)+10,(NODE_HEIGHT/2f)+10, new Point3f(currentGameMap.getEnemyPath().get(0).getCentre().getX(), currentGameMap.getEnemyPath().get(0).getCentre().getY(),0), 1,100,this.round+1,1));
+        enemyTypes.add(new Enemy("res/virus/virus_1.png",(NODE_WIDTH/2f)+10,(NODE_HEIGHT/2f)+10, new Point3f(currentGameMap.getEnemyPath().get(0).getCentre().getX(), currentGameMap.getEnemyPath().get(0).getCentre().getY(),0), 1,400,2*this.round+1,1.5f));
+        enemyTypes.add(new Enemy("res/virus/virus_2.png",(NODE_WIDTH/2f)+10,(NODE_HEIGHT/2f)+10, new Point3f(currentGameMap.getEnemyPath().get(0).getCentre().getX(), currentGameMap.getEnemyPath().get(0).getCentre().getY(),0), 1,500,3*this.round+1,1));
+        enemyTypes.add(new Enemy("res/virus/virus_3.png",(NODE_WIDTH/2f)+10,(NODE_HEIGHT/2f)+10, new Point3f(currentGameMap.getEnemyPath().get(0).getCentre().getX(), currentGameMap.getEnemyPath().get(0).getCentre().getY(),0), 1,1000, 4*this.round+1, 1));
+        enemyTypes.add(new Enemy("res/virus/virus_4.png",(NODE_WIDTH/2f)+10,(NODE_HEIGHT/2f)+10, new Point3f(currentGameMap.getEnemyPath().get(0).getCentre().getX(), currentGameMap.getEnemyPath().get(0).getCentre().getY(),0), 1,2000,5*this.round+1, 2));
+        enemyTypes.add(new Enemy("res/virus/virus_5.png",(NODE_WIDTH/2f)+10,(NODE_HEIGHT/2f)+10, new Point3f(currentGameMap.getEnemyPath().get(0).getCentre().getX(), currentGameMap.getEnemyPath().get(0).getCentre().getY(),0), 1,2000,6*this.round+1, 1.5f));
+        enemyTypes.add(new Enemy("res/virus/virus_6.png",(NODE_WIDTH/2f)+10,(NODE_HEIGHT/2f)+10, new Point3f(currentGameMap.getEnemyPath().get(0).getCentre().getX(), currentGameMap.getEnemyPath().get(0).getCentre().getY(),0), 1,5000,7*this.round+1, 1));
     }
 
     public void initializeTurrets(){
@@ -98,6 +107,8 @@ public class GameManager {
         turretTypes.add(new Turret("res/turrets/MG.png",40,70, new Point3f(), "MG", 5 ,5,200,
                 new Bullet("res/Bullet.png",10,10, new Point3f(), 50)));
         turretTypes.add(new Turret("res/turrets/Missile_Launcher.png",40,70, new Point3f(), "Missile", 10 ,20,400,
+                new Bullet("res/Bullet.png",10,10, new Point3f(), 100)));
+        turretTypes.add(new Turret("res/turrets/Controlled.png",100,100, new Point3f(), "Controlled", 10 ,20,400,
                 new Bullet("res/Bullet.png",10,10, new Point3f(), 100)));
     }
 
@@ -227,4 +238,11 @@ public class GameManager {
         return difficulty;
     }
 
+    public GameSpeed getGameSpeed() {
+        return gameSpeed;
+    }
+
+    public void setGameSpeed(GameSpeed gameSpeed) {
+        this.gameSpeed = gameSpeed;
+    }
 }
