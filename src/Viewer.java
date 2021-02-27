@@ -81,12 +81,10 @@ public class Viewer extends JPanel {
 	//https://gamesupply.itch.io/virus-free-mini-pack
 	private void drawEnemies(Enemy enemy, Graphics g) {
 		String texture = enemy.getTexture();
-		int x = (int) enemy.getCentre().getX();
-		int y = (int) enemy.getCentre().getY();
-		int width = (int) enemy.getWidth();
-		int height = (int) enemy.getHeight();
-		float healthRemainingPerc = (float) enemy.getHealth()/enemy.getInitialHealth();
+		int x = (int) enemy.getCentre().getX(), y = (int) enemy.getCentre().getY();
+		int width = (int) enemy.getWidth(), height = (int) enemy.getHeight();
 
+		float healthRemainingPerc = (float) enemy.getHealth()/enemy.getInitialHealth();
 		mapManager.addToTileImages(texture);
 		Image myImage = mapManager.getTileImages().get(texture);
 
@@ -97,50 +95,45 @@ public class Viewer extends JPanel {
 		g.drawRect(x,y, width, height/8);
 		g.fillRect(x,y, (int)(width*healthRemainingPerc), height/8);
 		g.drawImage(myImage, x,y, width, height, null);
-
 	}
 
 	private void drawBackground(Graphics g){
+
 		Node[][] nodes = mapManager.getCurrentGameMap().getNodes();
+
 		for(int i = 0; i < nodes.length; i++){
 			for(int j = 0; j < nodes[0].length; j++){
 				Node node = nodes[i][j];
+				int x = (int) node.getCentre().getX(), y = (int) node.getCentre().getY();
+				int width = (int) node.getWidth(), height = (int) node.getHeight();
+
 				mapManager.addToTileImages(node.getTexture());
 				Image image = mapManager.getTileImages().get(node.getTexture());
 
-				float mouseX = controller.getMouseMovePosition().getX();
-				float mouseY = controller.getMouseMovePosition().getY();
-				if(node.isAvailable() && mouseX >= node.getCentre().getX() &&
-						mouseX <= node.getCentre().getX() +node.getWidth() &&
-						mouseY >= node.getCentre().getY()  &&
-						mouseY <= node.getCentre().getY()+node.getHeight() ){
+				if(isInside( x, x+width, y, y+height ) && node.isAvailable()){
 					node.setTextureLocation("res/map/grass-selected.png");
 				}else if (node.isAvailable()){
 					node.setTextureLocation("res/map/grass.png");
 				}
-				g.drawImage(image, (int) node.getCentre().getX(), (int) node.getCentre().getY(),(int) node.getWidth(), (int) node.getHeight(), null);
+				g.drawImage(image, x, y, width, height, null);
 			}
 		}
 	}
-	
+
 	private void drawBullet(Bullet bullet, Graphics g){
-		int x = (int) bullet.getCentre().getX();
-		int y = (int) bullet.getCentre().getY();
-		int width = (int) bullet.getWidth();
-		int height = (int) bullet.getHeight();
+		int x = (int) bullet.getCentre().getX(), y = (int) bullet.getCentre().getY();
+		int width = (int) bullet.getWidth(), height = (int) bullet.getHeight();
 
 		g.setColor(Color.RED);
-		g.fillArc(x,y,width, height, 0, 360);
+		g.fillArc(x, y, width, height, 0, 360);
 	}
 
 	private void drawPlayer(Turret player, Graphics g) {
 	    Graphics2D g2d = (Graphics2D) g;
 
 		String texture = player.getTexture();
-		int x = (int) player.getCentre().getX();
-		int y = (int) player.getCentre().getY();
-		int width = (int)player.getWidth();
-		int height = (int) player.getHeight();
+		int x = (int) player.getCentre().getX(), y = (int) player.getCentre().getY();
+		int width = (int)player.getWidth(), height = (int) player.getHeight();
 		int range = (int) player.getRange();
 		String type = player.getType();
 
@@ -170,14 +163,19 @@ public class Viewer extends JPanel {
 			g2d.setTransform(old);
 		}
 
-		if(controller.getMouseMovePosition().getX() >= x &&
-				controller.getMouseMovePosition().getX() <= x+width &&
-				controller.getMouseMovePosition().getY() >= y  &&
-				controller.getMouseMovePosition().getY() <= y+height ){
+		if(isInside(x,x+width, y, y+height)){
 			g.setColor(Color.RED);
 			g.drawArc(x-(range/2),y-(range/2), width+range, height+range, 0, 360);
 		}
 	}
+
+	private boolean isInside(int xStart, int xEnd, int yStart, int yEnd){
+		return controller.getMouseMovePosition().getX() >= xStart &&
+				controller.getMouseMovePosition().getX() <= xEnd &&
+				controller.getMouseMovePosition().getY() >= yStart  &&
+				controller.getMouseMovePosition().getY() <= yEnd;
+	}
+
     private void markSelected(Graphics g){
 	    Node selected = gameManager.getSelected();
 	    if(selected != null){

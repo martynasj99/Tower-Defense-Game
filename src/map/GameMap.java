@@ -1,11 +1,11 @@
 package map;
-
 import util.Point3f;
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class GameMap {
+
+    private final int[][] DIRECTIONS = {{0,1},{1,0},{0,-1},{-1,0}};
 
     private Node[][] nodes;
     private int[][] configuration;
@@ -30,17 +30,61 @@ public class GameMap {
         nodeWidth = screenWidth/nw;
         nodeHeight = screenHeight/nh;
 
-
         this.nodes = new Node[nw][nh];
         for(int i = 0; i < nodes.length; i++){
             for(int j = 0; j < nodes[0].length; j++){
                 if(configuration[i][j] == 0)
                     nodes[i][j] = new Node("res/map/grass.png", nodeWidth-1, nodeHeight-1, new Point3f((j*nodeWidth), (i*nodeHeight),0), true);
+                else if(configuration[i][j] == -1){
+                    nodes[i][j] = new Node("res/blankSprite.png", nodeWidth-1, nodeHeight-1, new Point3f((j*nodeWidth), (i*nodeHeight),0), false);
+                }
                 else{
                     nodes[i][j] = new Node("res/map/dirt.png", nodeWidth-1, nodeHeight-1, new Point3f((j*nodeWidth), (i*nodeHeight),0), false);
                 }
             }
         }
+        generatePath();
+    }
+
+    private void generatePath(){
+        this.enemyPath = new ArrayList<>();
+        int curr = 0;
+        int i = 0, j = 1;
+        while( i != 0 || j != 0 ){
+            if(this.configuration[i][j] == 2){
+                this.enemyPath.add(this.nodes[i][j]);
+                recursivePath(this.configuration, new boolean[this.configuration.length][this.configuration[0].length], i, j);
+                break;
+            }
+            int newI = i + DIRECTIONS[curr][0];
+            int newJ = j + DIRECTIONS[curr][1];
+            if(newI >= 0 && newI < this.configuration.length && newJ >= 0 && newJ < this.configuration[0].length ){
+                i = newI;
+                j = newJ;
+            }else{
+                curr = (curr+1)%4;
+            }
+        }
+    }
+
+    private void recursivePath (int[][] config, boolean[][] visited, int row, int col){
+        if(!isValid(visited, row, col)) return;
+
+        visited[row][col] = true;
+        if(config[row][col] == 1) enemyPath.add(nodes[row][col]);
+
+        for(int i = 0; i < 4; i++ ){
+            int newRow = row + DIRECTIONS[i][0];
+            int newCol = col + DIRECTIONS[i][1];
+
+            if(isValid(visited, newRow, newCol) && config[newRow][newCol] == 1){
+                recursivePath(config, visited, newRow, newCol);
+            }
+        }
+    }
+
+    private boolean isValid(boolean[][] visited, int i, int j){
+        return !(i >= this.configuration.length || i < 0 || j >= this.configuration[0].length || j < 0 || visited[i][j]);
     }
 
     public void useNode(int y, int x){

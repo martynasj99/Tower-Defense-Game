@@ -1,9 +1,11 @@
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import javax.sound.sampled.Clip;
 import javax.swing.*;
 import GameObjects.Turret;
+import map.MapEditor;
 import map.MapManager;
 import util.UnitTests;
 
@@ -41,7 +43,7 @@ public class MainWindow {
 	 private static JFrame frame = new JFrame("Tower Defense Game");
 	 private static Model gameWorld = new Model();
 	 private static Viewer canvas = new Viewer(gameWorld);
-	 private Controller controller = new Controller();
+	 private static Controller controller = new Controller();
 	 private static MapManager mapManager = MapManager.getInstance();
 	 private AudioManager audioManager = AudioManager.getInstance();
 	 private static GameManager gameManager = GameManager.getInstance();
@@ -56,13 +58,18 @@ public class MainWindow {
 	 private static JButton deleteButton;
 	 private static JButton nextWave;
 	 private static JList selectTurret;
-	 private static JButton pauseButton;
 	 private static JButton exitGameButton;
 	 private static JButton startMenuButton;
 	 private static List<JButton> mapButtons;
 	 private static List<JButton> difficultButtons;
 	 private static List<JButton> gameSpeedButtons;
 	 private static JButton mapEditorButton;
+
+	 private static JButton saveNewMapButton;
+	 private static JList selectTile;
+	 private static JButton exitMapEditorButton;
+
+	 private static MapEditor mapEditor = new MapEditor();
 
 	 private JButton muteButton;
 
@@ -74,7 +81,7 @@ public class MainWindow {
 		frame.setLayout(null);
 		frame.add(canvas, BorderLayout.CENTER);
 		canvas.setBounds(0, 0, mapManager.getSCREEN_WIDTH(), mapManager.getSCREEN_HEIGHT());
-		canvas.setBackground(new Color(255,255,255)); //white background  replaced by Space background but if you remove the background method this will draw a white screen
+		canvas.setBackground(new Color(0,0,0)); //white background  replaced by Space background but if you remove the background method this will draw a white screen
 		canvas.setVisible(false); // this will become visible after you press the key.
 
 		backgroundClip = audioManager.playSound("res/music/background-music.wav");
@@ -95,7 +102,7 @@ public class MainWindow {
 		canvas.addMouseListener(controller);
 		canvas.addMouseMotionListener(controller);
 		canvas.requestFocusInWindow(); // making sure that the Canvas is in focus so keyboard input will be taking in .
-
+		mapManager.configureMap();
 		changeGameState(true);
 		frame.setVisible(true);
 	}
@@ -110,6 +117,20 @@ public class MainWindow {
 
 				while (FrameCheck > System.currentTimeMillis()){} //wait till next time step
 
+				if(gameManager.isInEditor() && Controller.getInstance().isMouseDragged()){
+					float x = controller.getMouseDraggedPosition().getX();
+					float y = controller.getMouseDraggedPosition().getY();
+
+					int nodeX = (int) (x/ mapManager.getCurrentGameMap().getNodeWidth());
+					int nodeY = (int) (y/ mapManager.getCurrentGameMap().getNodeHeight());
+					if(nodeX < mapEditor.getMapConfig().length && nodeX >= 0 && nodeY < mapEditor.getMapConfig()[0].length && nodeY >= 0 ){
+						mapEditor.updateConfig(nodeX, nodeY);
+						mapManager.getGameMaps().get(3).setConfiguration(mapEditor.getMapConfig());
+						mapManager.getGameMaps().get(3).configure();
+						canvas.updateview();
+					}
+
+				}
 				if(startGame && gameManager.getGameSpeed() != GameManager.GameSpeed.PAUSED) {
 					gameLoop();
 				}
@@ -219,14 +240,14 @@ public class MainWindow {
 	}
 
 	private void setUpMaps(){
+		List<String> mapImages = Arrays.asList("res/map/map01.jpg", "res/map/map02.jpg", "res/map/map03.jpg", "res/map/map04.jpg");
 		mapButtons = new ArrayList<>();
-		String[] mapImages = {"res/map/map01.jpg", "res/map/map02.jpg", "res/map/map03.jpg"};
 		for(int i = 0; i < mapManager.getGameMaps().size(); i++){
 			int height = mapManager.getSCREEN_HEIGHT()/3;
 			int width = (mapManager.getSCREEN_WIDTH()+INFO_PANEL_LENGTH)/mapManager.getGameMaps().size();
 
 			//reference: https://stackoverflow.com/questions/13810213/java-stretch-icon-to-fit-button
-			JButton map = new JButton(new ImageIcon(((new ImageIcon(mapImages[i]).getImage()
+			JButton map = new JButton(new ImageIcon(((new ImageIcon(mapImages.get(i)).getImage()
 					.getScaledInstance(width, height, java.awt.Image.SCALE_SMOOTH)))));
 			map.setBounds(width*i, 100, width, height);
 			mapButtons.add(map);
@@ -292,8 +313,6 @@ public class MainWindow {
 			frame.add(button);
 		}
 		gameSpeedButtons.get(1).setEnabled(false);
-
-
 	}
 
 	private void setUpExit(){
@@ -325,16 +344,66 @@ public class MainWindow {
 	}
 
 	private void setUpMapEditor(){
+		String[] tileTypes = {"grass", "dirt", "start"};
+
 		mapEditorButton = new JButton("Map Editor");
+		saveNewMapButton = new JButton("Save");
+		exitMapEditorButton = new JButton("Exit");
+		selectTile = new JList(tileTypes);
+
 		mapEditorButton.setBounds(mapManager.getSCREEN_WIDTH()/2, 400, INFO_PANEL_LENGTH, DEFAULT_INFO_HEIGHT*2);
-		nextInfoOffset++;
+		saveNewMapButton.setBounds(mapManager.getSCREEN_WIDTH(), DEFAULT_INFO_HEIGHT*2 + DEFAULT_INFO_HEIGHT*tileTypes.length, INFO_PANEL_LENGTH, DEFAULT_INFO_HEIGHT);
+		exitMapEditorButton.setBounds(mapManager.getSCREEN_WIDTH(), DEFAULT_INFO_HEIGHT*3 + DEFAULT_INFO_HEIGHT*tileTypes.length, INFO_PANEL_LENGTH, DEFAULT_INFO_HEIGHT);
+		selectTile.setBounds(mapManager.getSCREEN_WIDTH(), DEFAULT_INFO_HEIGHT*2, INFO_PANEL_LENGTH, DEFAULT_INFO_HEIGHT*tileTypes.length);
+
+		mapEditorButton.addActionListener(e ->{
+			mapManager.setCurrentGameMap(3);
+			changeToMapEditorState(true);
+		});
+
+		selectTile.addListSelectionListener(e ->{
+			mapEditor.setSelectedTexture(selectTile.getSelectedIndex());
+		});
+
+		saveNewMapButton.addActionListener(e ->{
+			mapManager.getGameMaps().get(3).setConfiguration(mapEditor.getMapConfig());
+			mapManager.getGameMaps().get(3).configure();
+			changeToMapEditorState(false);
+			changeGameState(true);
+			gameManager.init();
+		});
+		mapManager.setCurrentGameMap(mapManager.getGameMaps().size()-1);
+		canvas.setVisible(true);
+
 		frame.add(mapEditorButton);
+		frame.add(saveNewMapButton);
+	//	frame.add(exitMapEditorButton);
+		frame.add(selectTile);
+	}
+
+	private static void changeToMapEditorState(boolean toEditor){
+		startMenuButton.setVisible(!toEditor);
+		mapEditorButton.setVisible(!toEditor);
+		saveNewMapButton.setVisible(toEditor);
+		exitMapEditorButton.setVisible(toEditor);
+		selectTile.setVisible(toEditor);
+		canvas.setVisible(toEditor);
+		for (JButton mapButton : mapButtons){
+			mapButton.setVisible(!toEditor);
+		}
+		for(JButton difficultyButton : difficultButtons) difficultyButton.setVisible(!toEditor);
+		gameManager.setInEditor(toEditor);
 	}
 
 	private static void changeGameState(boolean isEnd){
 		if(isEnd){
 			gameWorld.clearAll();
 			mapManager.configureMap();
+			if(mapEditor!=null){
+				mapManager.getGameMaps().get(3).setConfiguration(mapEditor.getMapConfig());
+				mapManager.getGameMaps().get(3).configure();
+			}
+
 		}else{
 			gameWorld.startWave();
 			gameWorld.scheduleFire();
@@ -347,10 +416,13 @@ public class MainWindow {
 		nextWave.setVisible(!isEnd);
 		exitGameButton.setVisible(!isEnd);
 		mapEditorButton.setVisible(isEnd);
+		saveNewMapButton.setVisible(false);
+		selectTile.setVisible(false);
 		for (JButton mapButton : mapButtons){
 			mapButton.setVisible(isEnd);
 			mapButton.setEnabled(true);
 		}
+		mapButtons.get(3).setVisible(isEnd && mapEditor.isValidConfiguration());
 		for(JButton difficultyButton : difficultButtons) difficultyButton.setVisible(isEnd);
 		for(JButton gameSpeedButton : gameSpeedButtons) gameSpeedButton.setVisible(!isEnd);
 		startGame=!isEnd;

@@ -3,7 +3,7 @@ package GameObjects;
 import util.GameObject;
 import util.Point3f;
 
-import java.util.concurrent.TimeUnit;
+import java.util.List;
 
 public class Turret extends GameObject {
 
@@ -15,9 +15,11 @@ public class Turret extends GameObject {
     private int sellCost;
     private Bullet bullet;
     private Enemy target;
+    private List<String> textureLocations;
 
-    public Turret(String textureLocation, float width, float height, Point3f centre, String type, int cost, int speed, float range, Bullet bullet) {
-        super(textureLocation, width, height, centre);
+    public Turret(List<String> textureLocations, float width, float height, Point3f centre, String type, int cost, int speed, float range, Bullet bullet) {
+        super(textureLocations.get(0), width, height, centre);
+        this.textureLocations = textureLocations;
         this.type = type;
         this.level = 0;
         this.cost = cost;
@@ -30,11 +32,15 @@ public class Turret extends GameObject {
 
     public void upgradeTurret(){
         this.level++;
-        this.range +=10;
+        this.range +=25;
         this.bullet.setDamage(getBullet().getDamage()+10);
         this.sellCost = cost/5;
-        this.cost *= this.cost+1;
-        this.speed-=2;
+        this.cost = this.level*this.level * 20;
+        if(this.speed > 1)
+            this.speed-= 1;
+        if (this.level > 0 && this.level <= 6 && this.level%2==0){
+            super.setTextureLocation(this.textureLocations.get(this.level/2));
+        }
     }
 
     public String getType() {
@@ -99,5 +105,13 @@ public class Turret extends GameObject {
 
     public void setSellCost(int sellCost) {
         this.sellCost = sellCost;
+    }
+
+    public List<String> getTextureLocations() {
+        return textureLocations;
+    }
+
+    public void setTextureLocations(List<String> textureLocations) {
+        this.textureLocations = textureLocations;
     }
 }

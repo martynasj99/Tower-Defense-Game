@@ -36,7 +36,7 @@ SOFTWARE.
  */ 
 public class Model {
 
-	private final int NEXT_WAVE_CONSTRAINT = 8;
+	private final int NEXT_WAVE_CONSTRAINT = 15;
 
 	private static int step = 0;
 
@@ -137,7 +137,7 @@ public class Model {
 			Point3f turretLocation = new Point3f(node.getCentre().getX(), node.getCentre().getY(), 0);
 			Turret t = gameManager.getSelectedTurret();
 			Bullet turretBullet = new Bullet("res/Bullet.png",10,10, new Point3f(turretLocation.getX(), turretLocation.getY(),0), 20);
-			Turret turret = new Turret(t.getTexture(),t.getWidth(),t.getHeight(), turretLocation, t.getType(), t.getCost() ,t.getSpeed(),t.getRange(), turretBullet);
+			Turret turret = new Turret(t.getTextureLocations(),t.getWidth(),t.getHeight(), turretLocation, t.getType(), t.getCost() ,t.getSpeed(),t.getRange(), turretBullet);
 			if(gameManager.getCoins() >= turret.getCost()){
 				gameManager.changeCoins(-turret.getCost());
 				node.setAvailable(false);

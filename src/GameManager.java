@@ -6,10 +6,7 @@ import map.MapManager;
 import map.Node;
 import util.Point3f;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.LinkedBlockingDeque;
 
 public class GameManager {
@@ -24,9 +21,8 @@ public class GameManager {
         NORMAL,
         FAST
     }
-
-    private static final GameManager gameManager = new GameManager();
     private  MapManager mapManager = MapManager.getInstance();
+    private static final GameManager gameManager = new GameManager();
 
     private final int NODE_WIDTH = mapManager.getCurrentGameMap().getNodeWidth();
     private final int NODE_HEIGHT = mapManager.getCurrentGameMap().getNodeHeight();
@@ -45,11 +41,13 @@ public class GameManager {
     private Turret selectedTurret;
 
     private boolean isPaused;
+    private boolean isInEditor;
 
     private Queue<Enemy> enemiesToSpawn = new LinkedBlockingDeque<>();
 
     private GameManager(){
         this.difficulty = Difficulty.MEDIUM;
+        this.isInEditor = false;
         init();
     }
 
@@ -64,7 +62,7 @@ public class GameManager {
     public void init(){
         switch (difficulty){
             case EASY:
-                this.coins = 50;
+                this.coins = 1000;
                 this.lives = 20;
                 break;
             case MEDIUM:
@@ -83,6 +81,7 @@ public class GameManager {
         this.round = 0;
         this.isPaused = false;
         this.selected = null;
+
         initializeTurrets();
         initializeEnemies();
 
@@ -102,13 +101,17 @@ public class GameManager {
 
     public void initializeTurrets(){
         turretTypes = new ArrayList<>();
-        turretTypes.add(new Turret("res/turrets/Cannon.png",40,70, new Point3f(), "Cannon", 1 ,10,200,
+        List<String> cannonTextures = Arrays.asList("res/turrets/Cannon.png", "res/turrets/Cannon2.png", "res/turrets/Cannon3.png");
+        List<String> mgTextures = Arrays.asList("res/turrets/MG.png", "res/turrets/MG2.png", "res/turrets/MG3.png");
+        List<String> missileTextures = Arrays.asList("res/turrets/Missile_Launcher.png", "res/turrets/Missile_Launcher2.png", "res/turrets/Missile_Launcher3.png");
+
+        turretTypes.add(new Turret(cannonTextures,40,70, new Point3f(), "Cannon", 1 ,10,200,
                 new Bullet("res/Bullet.png",10,10, new Point3f(), 10)));
-        turretTypes.add(new Turret("res/turrets/MG.png",40,70, new Point3f(), "MG", 5 ,5,200,
+        turretTypes.add(new Turret(mgTextures,40,70, new Point3f(), "MG", 5 ,5,200,
                 new Bullet("res/Bullet.png",10,10, new Point3f(), 50)));
-        turretTypes.add(new Turret("res/turrets/Missile_Launcher.png",40,70, new Point3f(), "Missile", 10 ,20,400,
+        turretTypes.add(new Turret(missileTextures,40,70, new Point3f(), "Missile", 10 ,20,400,
                 new Bullet("res/Bullet.png",10,10, new Point3f(), 100)));
-        turretTypes.add(new Turret("res/turrets/Controlled.png",100,100, new Point3f(), "Controlled", 10 ,20,400,
+        turretTypes.add(new Turret(Collections.singletonList("res/turrets/Controlled.png"),100,100, new Point3f(), "Controlled", 10 ,20,400,
                 new Bullet("res/Bullet.png",10,10, new Point3f(), 100)));
     }
 
@@ -244,5 +247,13 @@ public class GameManager {
 
     public void setGameSpeed(GameSpeed gameSpeed) {
         this.gameSpeed = gameSpeed;
+    }
+
+    public boolean isInEditor() {
+        return isInEditor;
+    }
+
+    public void setInEditor(boolean inEditor) {
+        isInEditor = inEditor;
     }
 }

@@ -33,9 +33,11 @@ SOFTWARE.
 public class Controller implements MouseListener, MouseMotionListener {
 
 	private static boolean MouseClicked = false;
+	private static boolean mouseDragged = false;
 	private static final Controller instance = new Controller();
 	private static Point3f mouseClickPosition = new Point3f();
 	private static Point3f mouseMovePosition = new Point3f();
+	private static Point3f mouseDraggedPosition = new Point3f();
 	   
 	public Controller() {
 	}
@@ -52,11 +54,13 @@ public class Controller implements MouseListener, MouseMotionListener {
 
 	@Override
 	public void mousePressed(MouseEvent e) {
+
 	}
 
 	@Override
 	public void mouseReleased(MouseEvent e) {
 		setMouseClicked(false);
+		setMouseDragged(false);
 	}
 
 	@Override
@@ -70,7 +74,9 @@ public class Controller implements MouseListener, MouseMotionListener {
 
 	@Override
 	public void mouseDragged(MouseEvent e) {
-
+		mouseDraggedPosition.setX(e.getX());
+		mouseDraggedPosition.setY(e.getY());
+		setMouseDragged(true);
 	}
 
 	@Override
@@ -101,5 +107,21 @@ public class Controller implements MouseListener, MouseMotionListener {
 
 	public static void setMouseMovePosition(Point3f mouseMovePosition) {
 		Controller.mouseMovePosition = mouseMovePosition;
+	}
+
+	public  boolean isMouseDragged() {
+		return mouseDragged;
+	}
+
+	public  void setMouseDragged(boolean mouseDragged) {
+		Controller.mouseDragged = mouseDragged;
+	}
+
+	public  Point3f getMouseDraggedPosition() {
+		return mouseDraggedPosition;
+	}
+
+	public  void setMouseDraggedPosition(Point3f mouseDraggedPosition) {
+		Controller.mouseDraggedPosition = mouseDraggedPosition;
 	}
 }
