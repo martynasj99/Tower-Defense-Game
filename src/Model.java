@@ -136,7 +136,7 @@ public class Model {
 		if(node.isAvailable() ){
 			Point3f turretLocation = new Point3f(node.getCentre().getX(), node.getCentre().getY(), 0);
 			Turret t = gameManager.getSelectedTurret();
-			Bullet turretBullet = new Bullet("res/Bullet.png",10,10, new Point3f(turretLocation.getX(), turretLocation.getY(),0), 20);
+			Bullet turretBullet = new Bullet(t.getBullet().getTexture(),(int) t.getBullet().getWidth(),(int) t.getBullet().getHeight(), new Point3f(turretLocation.getX(), turretLocation.getY(),0), 20);
 			Turret turret = new Turret(t.getTextureLocations(),t.getWidth(),t.getHeight(), turretLocation, t.getType(), t.getCost() ,t.getSpeed(),t.getRange(), turretBullet);
 			if(gameManager.getCoins() >= turret.getCost()){
 				gameManager.changeCoins(-turret.getCost());
@@ -154,38 +154,40 @@ public class Model {
 	}
 
 	private void fire(int step){
-		for(Turret turret : turretList){
-			if(step % turret.getSpeed() != 0) continue;
-			turret.setTarget(null);
-			if(!turret.getType().equals("Controlled")){
-				for(Enemy enemy : enemiesList){
-					if(enemy.getCentre().getX() >= turret.getCentre().getX()-turret.getRange()/2 &&
-							enemy.getCentre().getX() <= turret.getCentre().getX()+turret.getRange()/2 &&
-							enemy.getCentre().getY() >= turret.getCentre().getY()-turret.getRange()/2 &&
-							enemy.getCentre().getY() <= turret.getCentre().getY()+turret.getRange()/2){
-						turret.setTarget(enemy);
-						break;
+		if(gameManager.getGameSpeed().ordinal() != 0){ //game not paused
+			for(Turret turret : turretList){
+				if(step % (turret.getSpeed()/gameManager.getGameSpeed().ordinal()) != 0) continue;
+				turret.setTarget(null);
+				if(!turret.getType().equals("Controlled")){
+					for(Enemy enemy : enemiesList){
+						if(enemy.getCentre().getX() >= turret.getCentre().getX()-turret.getRange()/2 &&
+								enemy.getCentre().getX() <= turret.getCentre().getX()+turret.getRange()/2 &&
+								enemy.getCentre().getY() >= turret.getCentre().getY()-turret.getRange()/2 &&
+								enemy.getCentre().getY() <= turret.getCentre().getY()+turret.getRange()/2){
+							turret.setTarget(enemy);
+							break;
+						}
 					}
+					if(turret.getTarget() == null) continue;
 				}
-				if(turret.getTarget() == null) continue;
+
+				Bullet bullet = turret.getBullet();
+				Point3f tur = turret.getCentre();
+				Point3f target = turret.getType().equals("Controlled") ?
+						new Point3f(controller.getMouseMovePosition().getX(), controller.getMouseMovePosition().getY(), 0):
+						turret.getTarget().getCentre();
+
+				float diff_x = target.getX() - tur.getX();
+				float diff_y = (target.getY() - tur.getY())*-1;
+
+				float max = Math.max(Math.abs(diff_x), Math.abs(diff_y));
+				Vector3f direction = new Vector3f((diff_x/max)*8*gameManager.getGameSpeed().ordinal(), (diff_y/max)*8*gameManager.getGameSpeed().ordinal(), 0);
+
+				bullet.setDirection(direction);
+				bullet.setCentre(new Point3f(turret.getCentre().getX(), turret.getCentre().getY(), 0));
+				bulletList.add(bullet);
+				if(!audioManager.isMute()) audioManager.playSound("res/music/shoot.wav").start();
 			}
-
-			Bullet bullet = turret.getBullet();
-			Point3f tur = turret.getCentre();
-			Point3f target = turret.getType().equals("Controlled") ?
-					new Point3f(controller.getMouseMovePosition().getX(), controller.getMouseMovePosition().getY(), 0):
-					turret.getTarget().getCentre();
-
-			float diff_x = target.getX() - tur.getX();
-			float diff_y = (target.getY() - tur.getY())*-1;
-
-			float max = Math.max(Math.abs(diff_x), Math.abs(diff_y));
-			Vector3f direction = new Vector3f((diff_x/max)*8*gameManager.getGameSpeed().ordinal(), (diff_y/max)*8*gameManager.getGameSpeed().ordinal(), 0);
-
-			bullet.setDirection(direction);
-			bullet.setCentre(new Point3f(turret.getCentre().getX(), turret.getCentre().getY(), 0));
-			bulletList.add(bullet);
-			if(!audioManager.isMute()) audioManager.playSound("res/music/shoot.wav").start();
 		}
 	}
 
@@ -223,7 +225,7 @@ public class Model {
 			}
 		};
 		Timer timer = new Timer("spawner");
-		timer.scheduleAtFixedRate(task, 0L, 100L/gameManager.getGameSpeed().ordinal());
+		timer.scheduleAtFixedRate(task, 0L, 100L);
 	}
 
 	public void clearAll(){

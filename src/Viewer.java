@@ -123,9 +123,21 @@ public class Viewer extends JPanel {
 	private void drawBullet(Bullet bullet, Graphics g){
 		int x = (int) bullet.getCentre().getX(), y = (int) bullet.getCentre().getY();
 		int width = (int) bullet.getWidth(), height = (int) bullet.getHeight();
+		String texture = bullet.getTexture();
 
-		g.setColor(Color.RED);
-		g.fillArc(x, y, width, height, 0, 360);
+		Graphics2D g2d = (Graphics2D) g;
+		AffineTransform old = g2d.getTransform();
+		double angle = Math.atan2(bullet.getDirection().getY(), bullet.getDirection().getX()) * 180 / Math.PI;
+		angle+=90;
+
+		mapManager.addToTileImages(texture);
+		Image image = mapManager.getTileImages().get(texture);
+		g2d.rotate(angle, x, y);
+		g.drawImage(image, x, y, width, height, null);
+
+		g2d.setTransform(old);
+/*		g.setColor(Color.RED);
+		g.fillArc(x, y, width, height, 0, 360);*/
 	}
 
 	private void drawPlayer(Turret player, Graphics g) {

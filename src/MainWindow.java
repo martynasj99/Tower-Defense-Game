@@ -423,8 +423,15 @@ public class MainWindow {
 			mapButton.setEnabled(true);
 		}
 		mapButtons.get(3).setVisible(isEnd && mapEditor.isValidConfiguration());
+
 		for(JButton difficultyButton : difficultButtons) difficultyButton.setVisible(isEnd);
-		for(JButton gameSpeedButton : gameSpeedButtons) gameSpeedButton.setVisible(!isEnd);
+		for(JButton gameSpeedButton : gameSpeedButtons) {
+			gameSpeedButton.setEnabled(true);
+			gameSpeedButton.setVisible(!isEnd);
+		}
+		if(!isEnd) {
+			gameSpeedButtons.get(1).setEnabled(false);
+		}
 		startGame=!isEnd;
 		showSelectedTurret(false);
 	}
