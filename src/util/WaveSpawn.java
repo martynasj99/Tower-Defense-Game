@@ -5,7 +5,13 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-
+/**
+ * Student Name: Martynas Jagutis
+ * Student Number: 17424866
+ */
+/**
+ * Parts taken from https://stackoverflow.com/questions/8285595/reading-properties-file-in-java
+ */
 public class WaveSpawn {
 
     private Properties props;

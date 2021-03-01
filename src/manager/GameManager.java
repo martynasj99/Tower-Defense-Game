@@ -1,15 +1,19 @@
+package manager;
+
 import GameObjects.Bullet;
 import GameObjects.Enemy;
 import GameObjects.Turret;
 import map.GameMap;
-import map.MapManager;
 import map.Node;
 import util.Point3f;
 import util.WaveSpawn;
 
 import java.util.*;
 import java.util.concurrent.LinkedBlockingDeque;
-
+/**
+ * Student Name: Martynas Jagutis
+ * Student Number: 17424866
+ */
 public class GameManager {
     public enum Difficulty {
         EASY,
@@ -22,6 +26,8 @@ public class GameManager {
         NORMAL,
         FAST
     }
+
+    private final int NO_ROUNDS = 25;
 
     private  MapManager mapManager = MapManager.getInstance();
     private static final GameManager gameManager = new GameManager();
@@ -46,7 +52,10 @@ public class GameManager {
 
     private Queue<Enemy> enemiesToSpawn = new LinkedBlockingDeque<>();
 
+    private String errorMessage;
+
     private GameManager(){
+
         this.difficulty = Difficulty.MEDIUM;
         this.isInEditor = false;
         init();
@@ -82,7 +91,7 @@ public class GameManager {
         this.round = 0;
         this.isPaused = false;
         this.selected = null;
-
+        this.errorMessage = "";
         initializeTurrets();
         initializeEnemies();
 
@@ -256,5 +265,17 @@ public class GameManager {
 
     public void setInEditor(boolean inEditor) {
         isInEditor = inEditor;
+    }
+
+    public int getNO_ROUNDS() {
+        return NO_ROUNDS;
+    }
+
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+
+    public void setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
     }
 }

@@ -4,7 +4,10 @@ import util.GameObject;
 import util.Point3f;
 
 import java.util.List;
-
+/**
+ * Student Name: Martynas Jagutis
+ * Student Number: 17424866
+ */
 public class Turret extends GameObject {
 
     private String type;

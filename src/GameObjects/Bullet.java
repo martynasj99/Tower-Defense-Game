@@ -3,7 +3,10 @@ package GameObjects;
 import util.GameObject;
 import util.Point3f;
 import util.Vector3f;
-
+/**
+ * Student Name: Martynas Jagutis
+ * Student Number: 17424866
+ */
 public class Bullet extends GameObject {
 
     private Vector3f direction;

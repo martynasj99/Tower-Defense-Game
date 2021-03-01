@@ -5,7 +5,10 @@ import util.GameObject;
 import util.Point3f;
 
 import java.awt.*;
-
+/**
+ * Student Name: Martynas Jagutis
+ * Student Number: 17424866
+ */
 public class Node extends GameObject {
 
     private boolean isAvailable; //DEFINES WHETHER OR NOT YOU CAN PLACE TOWERS ON THIS NODE

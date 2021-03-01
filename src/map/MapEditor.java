@@ -1,5 +1,8 @@
 package map;
-
+/**
+ * Student Name: Martynas Jagutis
+ * Student Number: 17424866
+ */
 public class MapEditor {
 
     private int selectedTexture;

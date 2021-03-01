@@ -2,7 +2,10 @@ package GameObjects;
 
 import util.GameObject;
 import util.Point3f;
-
+/**
+ * Student Name: Martynas Jagutis
+ * Student Number: 17424866
+ */
 public class Enemy extends GameObject {
 
     private int level;

@@ -1,8 +1,8 @@
+package controller;
+
 import util.Point3f;
 
 import java.awt.event.*;
-import java.util.ArrayList;
-import java.util.HashMap;
 
 /*
  * Created by Abraham Campbell on 15/01/2020.
@@ -27,8 +27,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
    
    (MIT LICENSE ) e.g do what you want with this :-) 
- */ 
-
+ */
+/**
+ * Student Name: Martynas Jagutis
+ * Student Number: 17424866
+ */
 //Singeton pattern
 public class Controller implements MouseListener, MouseMotionListener {
 
@@ -38,10 +41,10 @@ public class Controller implements MouseListener, MouseMotionListener {
 	private static Point3f mouseClickPosition = new Point3f();
 	private static Point3f mouseMovePosition = new Point3f();
 	private static Point3f mouseDraggedPosition = new Point3f();
-	   
+
 	public Controller() {
 	}
-	 
+
 	public static Controller getInstance(){
 	        return instance;
 	    }

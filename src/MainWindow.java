@@ -5,8 +5,12 @@ import java.util.List;
 import javax.sound.sampled.Clip;
 import javax.swing.*;
 import GameObjects.Turret;
+import controller.Controller;
+import controller.KeyController;
+import manager.AudioManager;
+import manager.GameManager;
 import map.MapEditor;
-import map.MapManager;
+import manager.MapManager;
 import util.UnitTests;
 
 /*
@@ -32,8 +36,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
    
    (MIT LICENSE ) e.g do what you want with this :-) 
- */ 
-
+ */
+/**
+ * Student Name: Martynas Jagutis
+ * Student Number: 17424866
+ */
+/**
+ * Declaration of Authorship
+ * I declare that all material in this assessment is my own work except where there is clear
+ * acknowledgement and appropriate reference to the work of others.
+ */
 public class MainWindow {
 	private final int INFO_PANEL_LENGTH = 200;
 	private final int DEFAULT_INFO_HEIGHT = 25;
@@ -44,6 +56,7 @@ public class MainWindow {
 	 private static Model gameWorld = new Model();
 	 private static Viewer canvas = new Viewer(gameWorld);
 	 private static Controller controller = new Controller();
+	 private static KeyController keyController = new KeyController();
 	 private static MapManager mapManager = MapManager.getInstance();
 	 private AudioManager audioManager = AudioManager.getInstance();
 	 private static GameManager gameManager = GameManager.getInstance();
@@ -68,6 +81,8 @@ public class MainWindow {
 	 private static JButton saveNewMapButton;
 	 private static JList selectTile;
 	 private static JButton exitMapEditorButton;
+	 private static JLabel helpText;
+	 private static JLabel errorMessageText;
 
 	 private static MapEditor mapEditor = new MapEditor();
 
@@ -98,10 +113,14 @@ public class MainWindow {
 		setUpMapEditor();
 		setUpDifficulty();
 		setUpGameSpeedControl();
+		setUpErrorMessage();
+		setUpHelpText();
 
-		canvas.addMouseListener(controller);
-		canvas.addMouseMotionListener(controller);
+        frame.addKeyListener(keyController);
+        canvas.addMouseListener(controller);
+        canvas.addMouseMotionListener(controller);
 		canvas.requestFocusInWindow(); // making sure that the Canvas is in focus so keyboard input will be taking in .
+
 		mapManager.configureMap();
 		changeGameState(true);
 		frame.setVisible(true);
@@ -129,7 +148,6 @@ public class MainWindow {
 						mapManager.getGameMaps().get(3).configure();
 						canvas.updateview();
 					}
-
 				}
 				if(startGame && gameManager.getGameSpeed() != GameManager.GameSpeed.PAUSED) {
 					gameLoop();
@@ -145,7 +163,7 @@ public class MainWindow {
 		gameWorld.gameLogic();
 
 		infoText.setText("<html>Coins: " + gameManager.getCoins() +
-				"<br/>Round: " + gameManager.getRound() +
+				"<br/>Round: " + gameManager.getRound() + "/" + gameManager.getNO_ROUNDS() +
 				"<br/>Lives: " + gameManager.getLives() + "</html>");
 		if(gameManager.getSelected() != null) {
 			Turret selectedTurret = gameManager.getSelected().getTurret();
@@ -157,9 +175,27 @@ public class MainWindow {
 			deleteButton.setText("Sell ("+gameManager.getSelected().getTurret().getSellCost()+")");
 			showSelectedTurret(true);
 		}
-		if(gameManager.getLives() <= 0){
+
+		if(gameManager.getLives() <= 0 ){
+		    JOptionPane.showMessageDialog(frame, "You survived " + gameManager.getRound() + " rounds!");
 			changeGameState(true);
 		}
+		else if(gameManager.getRound() == gameManager.getNO_ROUNDS()){
+		    JOptionPane.showMessageDialog(frame, "You won the game! Congratulations!");
+            changeGameState(true);
+        }
+
+        if(keyController.isKey1Pressed()){
+            selectTurret.setSelectedIndex(0);
+        }else if(keyController.isKey2Pressed()){
+            selectTurret.setSelectedIndex(1);
+        }else if(keyController.isKey3Pressed()){
+            selectTurret.setSelectedIndex(2);
+        }else if(keyController.isKey4Pressed()) {
+            selectTurret.setSelectedIndex(3);
+        }
+        errorMessageText.setText(gameManager.getErrorMessage());
+
 	}
 
 	private void setUpInfoText(){
@@ -179,16 +215,20 @@ public class MainWindow {
 		selectedPanel.add(selectedTurretText);
 		selectedPanel.add(upgradeButton);
 		selectedPanel.add(deleteButton);
+		upgradeButton.setFocusable(false);
+		deleteButton.setFocusable(false);
+
 		frame.add(selectedPanel);
 		selectedPanel.setBounds(mapManager.getSCREEN_WIDTH(), DEFAULT_INFO_HEIGHT*nextInfoOffset, INFO_PANEL_LENGTH, DEFAULT_INFO_HEIGHT*NO_INFO);
 		nextInfoOffset += NO_INFO;
+		selectedPanel.setFocusable(false);
 
 		upgradeButton.addActionListener(e ->{
 			if(gameManager.getCoins() >= gameManager.getSelected().getTurret().getCost()) {
 				gameManager.changeCoins(-gameManager.getSelected().getTurret().getCost());
 				gameManager.getSelected().getTurret().upgradeTurret();
 			}
-			else System.out.println("NOT ENOUGH COINS FOR UPGRADE!!!");
+			else gameManager.setErrorMessage("NOT ENOUGH COINS!");
 		});
 
 		deleteButton.addActionListener(e ->{
@@ -205,6 +245,7 @@ public class MainWindow {
 
 	private void setUpNextWaveButton(){
 		nextWave = new JButton("Next Wave");
+		nextWave.setFocusable(false);
 		frame.add(nextWave);
 		nextWave.setBounds(mapManager.getSCREEN_WIDTH(), DEFAULT_INFO_HEIGHT*nextInfoOffset, INFO_PANEL_LENGTH, DEFAULT_INFO_HEIGHT);
 		nextInfoOffset++;
@@ -215,6 +256,7 @@ public class MainWindow {
 		startMenuButton = new JButton("Start Game");
 		startMenuButton.setBounds(400, 600, INFO_PANEL_LENGTH, DEFAULT_INFO_HEIGHT*2);
 
+		startMenuButton.setFocusable(false);
 		startMenuButton.addActionListener(e -> {
 			changeGameState(false);
 		});
@@ -227,7 +269,7 @@ public class MainWindow {
 		String[] options = new String[gameManager.getTurretTypes().size()];
 		for (int i = 0; i < options.length; i++){
 			Turret turret = gameManager.getTurretTypes().get(i);
-			options[i] =  turret.getType() + " (Cost: " + turret.getCost() + ")";
+			options[i] =  turret.getType() + " (Cost: " + turret.getCost() + ") ["+(i+1)+"]";
 		}
 
 		selectTurret = new JList(options);
@@ -236,6 +278,8 @@ public class MainWindow {
 		selectTurret.setSelectedIndex(0);
 		gameManager.setSelectedTurret(0);
 		selectTurret.addListSelectionListener(e -> gameManager.setSelectedTurret(selectTurret.getSelectedIndex()));
+
+		selectTurret.setFocusable(false);
 		frame.add(selectTurret);
 	}
 
@@ -250,6 +294,7 @@ public class MainWindow {
 			JButton map = new JButton(new ImageIcon(((new ImageIcon(mapImages.get(i)).getImage()
 					.getScaledInstance(width, height, java.awt.Image.SCALE_SMOOTH)))));
 			map.setBounds(width*i, 100, width, height);
+			map.setFocusable(false);
 			mapButtons.add(map);
 			map.addActionListener(e -> {
 				mapManager.setCurrentGameMap(mapButtons.indexOf(map));
@@ -259,7 +304,6 @@ public class MainWindow {
 			});
 			frame.add(map);
 		}
-		//mapButtons.get(0).setEnabled(false); //default
 	}
 
 	private void setUpMute(){
@@ -278,6 +322,7 @@ public class MainWindow {
 			if(audioManager.isMute()) backgroundClip.stop();
 			else backgroundClip.start();
 		});
+		muteButton.setFocusable(false);
 		frame.add(muteButton);
 	}
 
@@ -292,6 +337,8 @@ public class MainWindow {
 					.getScaledInstance(DEFAULT_INFO_HEIGHT*2, DEFAULT_INFO_HEIGHT*2, java.awt.Image.SCALE_SMOOTH)))));
 			button.setBackground(Color.WHITE);
 			button.setBounds(mapManager.getSCREEN_WIDTH()+ (INFO_PANEL_LENGTH/3 *i), DEFAULT_INFO_HEIGHT*nextInfoOffset, INFO_PANEL_LENGTH/3, DEFAULT_INFO_HEIGHT*2);
+
+			button.setFocusable(false);
 			gameSpeedButtons.add(button);
 			button.addActionListener(e ->{
 				switch (gameSpeedButtons.indexOf(button)){
@@ -312,6 +359,7 @@ public class MainWindow {
 			});
 			frame.add(button);
 		}
+        nextInfoOffset +=2;
 		gameSpeedButtons.get(1).setEnabled(false);
 	}
 
@@ -320,8 +368,11 @@ public class MainWindow {
 		exitGameButton.setBounds(mapManager.getSCREEN_WIDTH(), DEFAULT_INFO_HEIGHT*nextInfoOffset, INFO_PANEL_LENGTH, DEFAULT_INFO_HEIGHT);
 		nextInfoOffset++;
 		exitGameButton.addActionListener(e ->{
-			changeGameState(true);
+		    int n = JOptionPane.showConfirmDialog(frame, "Are you sure you want to quit?", "Quit", JOptionPane.YES_NO_OPTION);
+		    if(n == 0)
+			    changeGameState(true);
 		});
+		exitGameButton.setFocusable(false);
 		frame.add(exitGameButton);
 	}
 
@@ -337,7 +388,7 @@ public class MainWindow {
 				for(JButton difButton : difficultButtons) difButton.setEnabled(true);
 				button.setEnabled(false);
 			});
-
+            button.setFocusable(false);
 			frame.add(button);
 		}
 		difficultButtons.get(1).setEnabled(false); //default
@@ -361,9 +412,7 @@ public class MainWindow {
 			changeToMapEditorState(true);
 		});
 
-		selectTile.addListSelectionListener(e ->{
-			mapEditor.setSelectedTexture(selectTile.getSelectedIndex());
-		});
+		selectTile.addListSelectionListener(e -> mapEditor.setSelectedTexture(selectTile.getSelectedIndex()));
 
 		saveNewMapButton.addActionListener(e ->{
 			mapManager.getGameMaps().get(3).setConfiguration(mapEditor.getMapConfig());
@@ -374,12 +423,39 @@ public class MainWindow {
 		});
 		mapManager.setCurrentGameMap(mapManager.getGameMaps().size()-1);
 		canvas.setVisible(true);
-
+        mapEditorButton.setFocusable(false);
+        saveNewMapButton.setFocusable(false);
 		frame.add(mapEditorButton);
 		frame.add(saveNewMapButton);
-	//	frame.add(exitMapEditorButton);
 		frame.add(selectTile);
 	}
+
+	private void setUpHelpText(){
+		helpText = new JLabel();
+		helpText.setBounds(mapManager.getSCREEN_WIDTH(), DEFAULT_INFO_HEIGHT*nextInfoOffset, INFO_PANEL_LENGTH, DEFAULT_INFO_HEIGHT*12);
+
+		nextInfoOffset += 11;
+		helpText.setText("<html><center>Help</center>" +
+				"<hr><center>Complete "+gameManager.getNO_ROUNDS()+" rounds to win</center>" +
+				"<hr><center>Select a turret and click on the tile to build it</center>" +
+				"<hr><center>Select a turret in the map to upgrade or sell it</center>" +
+				"<hr><center>Click the next wave button the spawn the next round/wave of enemies</center>" +
+				"<hr><center>Actions that can be performed by the keyboard are indicated by [key]</center>" +
+				"<hr><center>The controlled turret shoots where your mouse is located by pressing space or automatically after a certain level</center>" +
+				"</html>");
+		helpText.setVisible(true);
+		frame.add(helpText);
+	}
+
+	private void setUpErrorMessage(){
+	    errorMessageText = new JLabel();
+	    errorMessageText.setBounds(mapManager.getSCREEN_WIDTH(), DEFAULT_INFO_HEIGHT*nextInfoOffset, INFO_PANEL_LENGTH, DEFAULT_INFO_HEIGHT*2);
+	    nextInfoOffset += 2;
+	    errorMessageText.setForeground(Color.RED);
+	    errorMessageText.setVisible(true);
+	    errorMessageText.setHorizontalAlignment(SwingConstants.CENTER);
+	    frame.add(errorMessageText);
+    }
 
 	private static void changeToMapEditorState(boolean toEditor){
 		startMenuButton.setVisible(!toEditor);
@@ -403,7 +479,6 @@ public class MainWindow {
 				mapManager.getGameMaps().get(3).setConfiguration(mapEditor.getMapConfig());
 				mapManager.getGameMaps().get(3).configure();
 			}
-
 		}else{
 			gameWorld.startWave();
 			gameWorld.scheduleFire();
@@ -416,8 +491,10 @@ public class MainWindow {
 		nextWave.setVisible(!isEnd);
 		exitGameButton.setVisible(!isEnd);
 		mapEditorButton.setVisible(isEnd);
+		errorMessageText.setVisible(!isEnd);
 		saveNewMapButton.setVisible(false);
 		selectTile.setVisible(false);
+		helpText.setVisible(!isEnd);
 		for (JButton mapButton : mapButtons){
 			mapButton.setVisible(isEnd);
 			mapButton.setEnabled(true);

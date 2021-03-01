@@ -1,4 +1,6 @@
-package map;
+package manager;
+
+import map.GameMap;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -6,7 +8,13 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.List;
-
+/**
+ * Student Name: Martynas Jagutis
+ * Student Number: 17424866
+ */
+/**
+ * Tile Map idea inspired by https://www.youtube.com/user/Brackeys (where it was used in 3d unity game). All code however is mine.
+ * */
 public class MapManager {
 
     private static final MapManager instance = new MapManager();

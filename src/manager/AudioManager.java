@@ -1,8 +1,14 @@
-import map.MapManager;
+package manager;
 
 import javax.sound.sampled.*;
 import java.io.File;
-
+/**
+ * Student Name: Martynas Jagutis
+ * Student Number: 17424866
+ */
+/**
+ * reference: https://stackoverflow.com/questions/26305/how-can-i-play-sound-in-java
+ */
 public class AudioManager {
 
     private static final AudioManager instance = new AudioManager();
@@ -13,7 +19,7 @@ public class AudioManager {
 
     private boolean isMute = false;
 
-    //reference: https://stackoverflow.com/questions/26305/how-can-i-play-sound-in-java
+
     public synchronized Clip playSound(final String url) {
         Clip clip = null;
         try {

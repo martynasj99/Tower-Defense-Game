@@ -4,12 +4,13 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.LayoutManager;
 import java.awt.geom.AffineTransform;
-import java.io.File;
 import javax.swing.*;
 import GameObjects.Bullet;
 import GameObjects.Enemy;
 import GameObjects.Turret;
-import map.MapManager;
+import controller.Controller;
+import manager.GameManager;
+import manager.MapManager;
 import map.Node;
 
 /*
@@ -37,7 +38,20 @@ SOFTWARE.
    (MIT LICENSE ) e.g do what you want with this :-) 
  
  * Credits: Kelly Charles (2020)
- */ 
+ */
+/**
+ * Student Name: Martynas Jagutis
+ * Student Number: 17424866
+ */
+/**
+ * Declaration of Authorship
+ * I declare that all material in this assessment is my own work except where there is clear
+ * acknowledgement and appropriate reference to the work of others.
+ */
+/**
+ * https://stackoverflow.com/questions/2676719/calculating-the-angle-between-the-line-defined-by-two-points
+ * Reference : https://gist.github.com/sye8/edba2dfda1645b37bfcf5b9bd9ce3a75 (Some parts)
+ */
 public class Viewer extends JPanel {
 	private long CurrentAnimationTime= 0; 
 	
@@ -127,8 +141,7 @@ public class Viewer extends JPanel {
 
 		Graphics2D g2d = (Graphics2D) g;
 		AffineTransform old = g2d.getTransform();
-		double angle = Math.atan2(bullet.getDirection().getY(), bullet.getDirection().getX()) * 180 / Math.PI;
-		angle+=90;
+		double angle = Math.atan(bullet.getDirection().getY()/bullet.getDirection().getX()) * 180 / Math.PI;
 
 		mapManager.addToTileImages(texture);
 		Image image = mapManager.getTileImages().get(texture);
@@ -136,8 +149,6 @@ public class Viewer extends JPanel {
 		g.drawImage(image, x, y, width, height, null);
 
 		g2d.setTransform(old);
-/*		g.setColor(Color.RED);
-		g.fillArc(x, y, width, height, 0, 360);*/
 	}
 
 	private void drawPlayer(Turret player, Graphics g) {
@@ -168,16 +179,16 @@ public class Viewer extends JPanel {
 			g2d.drawImage(myImage, x+(mapManager.getCurrentGameMap().getNodeHeight()/2) - 21,y+(mapManager.getCurrentGameMap().getNodeHeight()/2) -50, width, height, null);
 			g2d.setTransform(old);
 		}else{
-			angle = Math.atan2(controller.getMouseMovePosition().getY() - player.getCentre().getY(), controller.getMouseMovePosition().getX() - player.getCentre().getX()) * 180 / Math.PI;
-			angle+= 90;
-			g2d.rotate(Math.toRadians(angle), x+(mapManager.getCurrentGameMap().getNodeHeight()/2f) - 50+(double)(width/2), y+(mapManager.getCurrentGameMap().getNodeHeight()/2f) -50+(double)(height/2));
-			g.drawImage(myImage, x-20, y-20, width, height, null);
-			g2d.setTransform(old);
+				angle = Math.atan2(controller.getMouseMovePosition().getY() - player.getCentre().getY(), controller.getMouseMovePosition().getX() - player.getCentre().getX()) * 180 / Math.PI;
+				angle+= 90;
+				g2d.rotate(Math.toRadians(angle), x+(mapManager.getCurrentGameMap().getNodeHeight()/2f) - 50+(double)(width/2), y+(mapManager.getCurrentGameMap().getNodeHeight()/2f) -50+(double)(height/2));
+				g.drawImage(myImage, x-20, y-20, width, height, null);
+				g2d.setTransform(old);
 		}
 
 		if(isInside(x,x+width, y, y+height)){
 			g.setColor(Color.RED);
-			g.drawArc(x-(range/2),y-(range/2), width+range, height+range, 0, 360);
+			g.drawArc(x-(range/2)+(mapManager.getCurrentGameMap().getNodeWidth()/2) ,y-(range/2)+(mapManager.getCurrentGameMap().getNodeWidth()/2), range, range, 0, 360);
 		}
 	}
 

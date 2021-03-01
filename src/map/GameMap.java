@@ -2,7 +2,14 @@ package map;
 import util.Point3f;
 import java.util.ArrayList;
 import java.util.List;
-
+/**
+ * Student Name: Martynas Jagutis
+ * Student Number: 17424866
+ */
+/**
+ * Tile Map idea inspired by https://www.youtube.com/user/Brackeys (where it was used in 3d unity game). All code however is mine.
+ * Textures taken from https://opengameart.org/
+ * */
 public class GameMap {
 
     private final int[][] DIRECTIONS = {{0,1},{1,0},{0,-1},{-1,0}};

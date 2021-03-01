@@ -4,8 +4,12 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import GameObjects.Bullet;
 import GameObjects.Enemy;
 import GameObjects.Turret;
+import controller.Controller;
+import controller.KeyController;
+import manager.AudioManager;
+import manager.GameManager;
 import map.GameMap;
-import map.MapManager;
+import manager.MapManager;
 import map.Node;
 import util.Point3f;
 import util.Vector3f;
@@ -33,7 +37,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
    
    (MIT LICENSE ) e.g do what you want with this :-) 
- */ 
+ */
+/**
+ * Student Name: Martynas Jagutis
+ * Student Number: 17424866
+ */
+/**
+ * Declaration of Authorship
+ * I declare that all material in this assessment is my own work except where there is clear
+ * acknowledgement and appropriate reference to the work of others.
+ */
 public class Model {
 
 	private final int NEXT_WAVE_CONSTRAINT = 15;
@@ -41,6 +54,7 @@ public class Model {
 	private static int step = 0;
 
 	private Controller controller = Controller.getInstance();
+	private KeyController keyController = KeyController.getInstance();
 	private MapManager mapManager = MapManager.getInstance();
 	private GameManager gameManager = GameManager.getInstance();
 	private AudioManager audioManager = AudioManager.getInstance();
@@ -88,11 +102,11 @@ public class Model {
 
 			Vector3f direction;
 
-			if(Math.abs(diff.getX()) <= 1 && Math.abs(diff.getY())  <= 1) {
+			if(Math.abs(diff.getX()) <= 2 && Math.abs(diff.getY())  <= 2) {
 				temp.setProgress(temp.getProgress() + 1);
 				direction = new Vector3f(0,0,0);
 			}
-			else if(Math.abs(diff.getX()) <= 1) direction = new Vector3f(0, (diff.getY() < 0 ? -1 : 1)*temp.getSpeed()*gameManager.getGameSpeed().ordinal(), 0);
+			else if(Math.abs(diff.getX()) <= 2) direction = new Vector3f(0, (diff.getY() < 0 ? -1 : 1)*temp.getSpeed()*gameManager.getGameSpeed().ordinal(), 0);
 			else direction = new Vector3f((diff.getX() < 0 ? 1 : -1 )*temp.getSpeed()*gameManager.getGameSpeed().ordinal(), 0, 0 );
 
 			temp.getCentre().ApplyVector(direction);
@@ -143,8 +157,8 @@ public class Model {
 				node.setAvailable(false);
 				node.setTurret(turret);
 				turretList.add(turret);
-			}else System.out.println("NOT ENOUGH COINS");
-		}else System.out.println("CANNOT PLACE HERE!");
+			}else gameManager.setErrorMessage("NOT ENOUGH COINS!");
+		}else gameManager.setErrorMessage("CANNOT PLACE HERE!");
 	}
 
 	private void spawn(){
@@ -173,6 +187,7 @@ public class Model {
 
 				Bullet bullet = turret.getBullet();
 				Point3f tur = turret.getCentre();
+
 				Point3f target = turret.getType().equals("Controlled") ?
 						new Point3f(controller.getMouseMovePosition().getX(), controller.getMouseMovePosition().getY(), 0):
 						turret.getTarget().getCentre();
@@ -183,10 +198,30 @@ public class Model {
 				float max = Math.max(Math.abs(diff_x), Math.abs(diff_y));
 				Vector3f direction = new Vector3f((diff_x/max)*8*gameManager.getGameSpeed().ordinal(), (diff_y/max)*8*gameManager.getGameSpeed().ordinal(), 0);
 
-				bullet.setDirection(direction);
-				bullet.setCentre(new Point3f(turret.getCentre().getX(), turret.getCentre().getY(), 0));
-				bulletList.add(bullet);
-				if(!audioManager.isMute()) audioManager.playSound("res/music/shoot.wav").start();
+				if(!turret.getType().equals("Controlled") || (turret.getType().equals("Controlled")&&keyController.isKeySpacePressed() || turret.getLevel() >= 2)) {
+					bullet.setDirection(direction);
+					bullet.setCentre(new Point3f(turret.getCentre().getX(), turret.getCentre().getY(), 0));
+					bulletList.add(bullet);
+					if(!audioManager.isMute()){
+						switch (turret.getType()){
+							case "Cannon":
+								audioManager.playSound("res/music/shoot.wav").start();
+								break;
+							case "MG":
+								audioManager.playSound("res/music/mg.wav").start();
+								break;
+							case "Missile":
+								audioManager.playSound("res/music/missile.wav").start();
+								break;
+							case "Controlled":
+								audioManager.playSound("res/music/plasma.wav").start();
+								break;
+							default:
+								break;
+						}
+					}
+				}
+
 			}
 		}
 	}
